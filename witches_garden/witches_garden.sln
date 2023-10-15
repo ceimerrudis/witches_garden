@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33529.622
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "witches_garden", "witches_garden", "{3675357F-95D9-48D1-B81D-BF2ADC0736BE}"
+	ProjectSection(SolutionItems) = preProject
+		Input_System.py = Input_System.py
+		main.py = main.py
+		Object_Renderer.py = Object_Renderer.py
+		Screen.py = Screen.py
+		UI_Renderer.py = UI_Renderer.py
+		window_functions.py = window_functions.py
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {91463DFE-3985-483D-A10E-6A1EF54E1734}
+	EndGlobalSection
+EndGlobal

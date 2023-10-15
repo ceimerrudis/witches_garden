@@ -1,3 +1,6 @@
 nose
 sphinx
 pygame
+thorpy
+numpy
+pillow
