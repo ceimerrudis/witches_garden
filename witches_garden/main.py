@@ -2,25 +2,35 @@
 
 import pygame
 from pygame.locals import *
-import thorpy
 import numpy
 from random import randint
 from Screen import Screen
 from Input_System import Input_System
 from UI_Renderer import UI_Renderer
 from Object_Renderer import Object_Renderer
+from Game_Data import Game_Data
+
+TICKS_PER_SECOND = 30
+SKIP_TIME = 1000 / TICKS_PER_SECOND
+MAX_FRAMESKIP = 10
+FPS_LIMIT = 60
+
+delta_time = 0
 
 black = (0, 0, 0)
 green = (0, 60, 0)
 
 screen = Screen()
 screen.fill(black)
-delta_time = 0
-FPS_LIMIT = 60
+
 clock = pygame.time.Clock()
+next_game_tick = pygame.time.get_ticks()
+
+game_data = Game_Data()
+
 inputs = Input_System()
-obj_renderer = Object_Renderer()
-ui_renderer = UI_Renderer()
+obj_renderer = Object_Renderer(screen, game_data)
+ui_renderer = UI_Renderer(screen)
 
 background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
 
@@ -30,9 +40,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False    
             break
-        if event.type == pygame.VIDEORESIZE:
+        elif event.type == pygame.VIDEORESIZE:
             width, height = event.w, event.h
             screen.resize(width, height)
+            
           
     if not running:
         break
@@ -40,35 +51,31 @@ while running:
     screen.draw(green, background_rect)
     delta_time = clock.tick(FPS_LIMIT)
     
-    #get inputs
-    inputs.get_inputs()
+    loops = 0;
+    while (pygame.time.get_ticks() > next_game_tick and loops < MAX_FRAMESKIP):
+        #get inputs
+        inputs.get_inputs()
     
+        #process the inputs
+        #only deals with game logic
+        game_data.update(inputs, delta_time)
+        
+        next_game_tick += SKIP_TIME;
+        loops += 1
+
     #process inputs unrelated to game (fullsreen toggle and any others)
-    if(inputs.f_11 == 1):
+    if(inputs.utility.fullscreen() == 2):
         screen.toggle_fullscreen()
 
-    #process the inputs
-    #only deals with game logic
-    #game.update(input)
-    if(inputs.w == 1 or inputs.w == 2):
-        screen.move_camera( 0, -1)
-    if(inputs.s == 1 or inputs.s == 2):
-        screen.move_camera( 0,  1)
-    if(inputs.a == 1 or inputs.a == 2):
-        screen.move_camera(-1,  0)
-    if(inputs.d == 1 or inputs.d == 2):
-        screen.move_camera( 1,  0)
-
+    screen.set_camera_pos(game_data.camera_pos)
+    
     #render the game
-    #spritepath = "witches_garden/sprites/"
-    #plot = pygame.image.load(spritepath + "plot.png")
-    #plot = pygame.transform.scale(plot, (64, 64))
-    #screen.surface.blit(plot, pygame.Rect((100, 100), (64, 64)), pygame.Rect((6, 6), (64, 64)))
-
+    #render the game world
+    obj_renderer.render(game_data)
+    
     #render the ui
-    ui_renderer.render(screen)
-    obj_renderer.render(screen)
-
+    ui_renderer.render()
+     
     pygame.display.update()
 
 pygame.quit()

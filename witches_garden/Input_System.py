@@ -1,73 +1,109 @@
 import pygame
+class utility():#keyset
+    def __init__(self, input_system):
+        self.input_system = input_system
+    
+    def fullscreen(self):
+        return self.input_system.keys[self.fullscreen_key] 
+
+    input_system = None
+    fullscreen_key = pygame.K_F11
+
+class garden():#keyset
+    def __init__(self, input_system):
+        self.input_system = input_system
+    
+    def action(self):
+        return self.input_system.keys[self.action_key] 
+
+    input_system = None
+    action_key = "mouse_0"
+
+class spectator_mode():#keyset
+    def __init__(self, input_system):
+        self.input_system = input_system
+    
+    def w(self):
+        return self.input_system.keys[self.w_key] 
+
+    def a(self):
+        return self.input_system.keys[self.a_key] 
+
+    def s(self):
+        return self.input_system.keys[self.s_key] 
+        
+    def d(self):
+        return self.input_system.keys[self.d_key] 
+
+    input_system = None
+    w_key = pygame.K_w
+    a_key = pygame.K_a
+    s_key = pygame.K_s
+    d_key = pygame.K_d
+
 class Input_System():
+    def __init__(self):
+        self.spectator_mode = spectator_mode(self)
+        self.garden = garden(self)
+        self.utility = utility(self)
+
     def get_inputs(self):
+        mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
+        mouse_presses = pygame.mouse.get_pressed()
+        key = "mouse_0"
+        if mouse_presses[0]:
+            if self.keys[key] == 0 or self.keys[key] == 1:
+                self.keys[key] = 2
+            else:
+                self.keys[key] = 3
+        else:
+            if self.keys[key] == 2 or self.keys[key] == 3:
+                self.keys[key] = 1
+            else:
+                self.keys[key] = 0
+
+        key = "mouse_2"
+        if mouse_presses[2]:
+            if self.keys[key] == 0 or self.keys[key] == 1:
+                self.keys[key] = 2
+            else:
+                self.keys[key] = 3
+        else:
+            if self.keys[key] == 2 or self.keys[key] == 3:
+                self.keys[key] = 1
+            else:
+                self.keys[key] = 0
+
         pressed_keys = pygame.key.get_pressed()
         
-        mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
-        #TODO overhaul
-        #1 key module
-        if pressed_keys[pygame.K_F11]:
-            if self.f_11 == 0 or self.f_11 == 3:
-                self.f_11 = 1
-            else:
-                self.f_11 = 2
-        else:
-            if self.f_11 == 1 or self.f_11 == 2:
-                self.f_11 = 3
-            else:
-                self.f_11 = 0
-        #1 key module end
+        for key_id in self.keys.keys():
+            value = self.keys[key_id]
+            if not (key_id == "mouse_0" or key_id == "mouse_2"):
+                if pressed_keys[key_id]:
+                    if value == 0 or value == 1:
+                        self.keys[key_id] = 2
+                    else:
+                        self.keys[key_id] = 3
+                else:
+                    if value == 2 or value == 3:
+                        self.keys[key_id] = 1
+                    else:
+                        self.keys[key_id] = 0
 
-        if pressed_keys[pygame.K_w]:
-            if self.w == 0 or self.w == 3:
-                self.w = 1
-            else:
-                self.w = 2
-        else:
-            if self.w == 1 or self.w == 2:
-                self.w = 3
-            else:
-                self.w = 0
-
-        if pressed_keys[pygame.K_a]:
-            if self.a == 0 or self.a == 3:
-                self.a = 1
-            else:
-                self.a = 2
-        else:
-            if self.a == 1 or self.a == 2:
-                self.a = 3
-            else:
-                self.a = 0
-
-        if pressed_keys[pygame.K_s]:
-            if self.s == 0 or self.s == 3:
-                self.s = 1
-            else:
-                self.s = 2
-        else:
-            if self.s == 1 or self.s == 2:
-                self.s = 3
-            else:
-                self.s = 0
-        #
-        if pressed_keys[pygame.K_d]:
-            if self.d == 0 or self.d == 3:
-                self.d = 1
-            else:
-                self.d = 2
-        else:
-            if self.d == 1 or self.d == 2:
-                self.d = 3
-            else:
-                self.d = 0
-    #0 means not clicked 1 means just clicked 2 means held # 3 means released
-    f_11 = 0
-    w = 0
-    a = 0
-    s = 0
-    d = 0
-    mouse_0 = 0
-    mouse_1 = 0
+    #0 means not clicked 2 means just clicked 3 means held # 1 means released
+    keys = {
+        pygame.K_F11: 0, 
+        pygame.K_w: 0, 
+        pygame.K_a: 0, 
+        pygame.K_s: 0, 
+        pygame.K_d: 0, 
+        "mouse_0":  0,
+        "mouse_2":  0,        
+    }
+    
     mouse_pos_x = 0#position in pixels relative to window (0, 0) == top left corner
     mouse_pos_y = 0#position in pixels relative to window (0, 0) == top left corner
+
+    spectator_mode = None
+    garden = None
+    utility = None

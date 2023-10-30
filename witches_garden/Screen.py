@@ -19,6 +19,9 @@ class Screen():
     def move_camera(self, x, y):
         self.viewport.update(self.viewport.x + x, self.viewport.y + y, self.viewport.w, self.viewport.h)
 
+    def set_camera_pos(self, pos):
+        self.viewport.update(pos[0], pos[1], self.viewport.w, self.viewport.h)
+
     def calc_rect_place_on_viewport(self, rect):
         # Calculate the scaled rect
         tmpRect = pygame.Rect(
@@ -73,7 +76,15 @@ class Screen():
         self.surface.fill(color)
 
     def blit(self, img, rect):
-        return 7    
+        result = self.calc_rect_place_on_viewport(rect)
+        if result is None:
+            return
+        tmpRect, area = result
+        tmpRect.update(tmpRect.x + area.left, tmpRect.y + area.top, area.w, area.h)
+        
+        img = pygame.transform.scale(img, (rect.w * self.scale, rect.h * self.scale))
+
+        self.surface.blit(img, tmpRect, area)
 
     def draw(self, color, rect):
         result = self.calc_rect_place_on_viewport(rect)
@@ -89,10 +100,6 @@ class Screen():
         
         flags = self.surface.get_flags()
         w, h = self.surface.get_size()
-
-        cursor = pygame.mouse.get_cursor()  # Duoas 16-04-2007 
-    
-        flags = self.surface.get_flags()
 
         if flags & FULLSCREEN == 0:
             #turning on
@@ -112,7 +119,5 @@ class Screen():
         pygame.display.set_caption(*caption)
 
         pygame.key.set_mods(0) #HACK: work-a-round for a SDL bug??
-
-        pygame.mouse.set_cursor( *cursor )  # Duoas 16-04-2007
     
         return self.surface
