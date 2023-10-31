@@ -22,16 +22,23 @@ class Screen():
     def set_camera_pos(self, pos):
         self.viewport.update(pos[0], pos[1], self.viewport.w, self.viewport.h)
 
-    def calc_rect_place_on_viewport(self, rect):
+    def calc_rect_place_on_viewport(self, rect, use_viewport_position = False):
         # Calculate the scaled rect
         tmpRect = pygame.Rect(
             (rect.x, rect.y, rect.w, rect.h)
         )
 
-        from_left_side = (tmpRect.left + tmpRect.width) - self.viewport.left
-        from_top_side = (tmpRect.top + tmpRect.height) - self.viewport.top
-        from_right_side = tmpRect.w - ((tmpRect.left + tmpRect.width) - (self.viewport.left + self.viewport.width))
-        from_bottom_side = tmpRect.h - ((tmpRect.top + tmpRect.height) - (self.viewport.top + self.viewport.height))
+        if use_viewport_position:
+            left = self.viewport.left
+            top = self.viewport.top
+        else:
+            left = 0
+            top = 0
+
+        from_left_side = (tmpRect.left + tmpRect.width) - left
+        from_top_side = (tmpRect.top + tmpRect.height) - top
+        from_right_side = tmpRect.w - ((tmpRect.left + tmpRect.width) - (left + self.viewport.width))
+        from_bottom_side = tmpRect.h - ((tmpRect.top + tmpRect.height) - (top + self.viewport.height))
 
         # Make sure the scaled rect stays within the boundaries of the viewport
         if from_left_side < 0 or from_top_side < 0 or from_right_side < 0 or from_bottom_side < 0:
@@ -49,7 +56,7 @@ class Screen():
         if from_bottom_side < tmpRect.height:
             area.height -= (tmpRect.height - from_bottom_side)
         
-        tmpRect.update(((tmpRect.x - self.viewport.x) * self.scale) + self.game_window.x, ((tmpRect.y - self.viewport.y) * self.scale) + self.game_window.y, tmpRect.w * self.scale, tmpRect.w * self.scale)
+        tmpRect.update(((tmpRect.x - left) * self.scale) + self.game_window.x, ((tmpRect.y - top) * self.scale) + self.game_window.y, tmpRect.w * self.scale, tmpRect.w * self.scale)
         area.update(area.x * self.scale, area.y * self.scale, area.w * self.scale, area.h * self.scale)
 
         #tmpRect place on surface to blit
@@ -75,24 +82,40 @@ class Screen():
     def fill(self, color):
         self.surface.fill(color)
 
-    def blit(self, img, rect):
-        result = self.calc_rect_place_on_viewport(rect)
+    def blit(self, img, rect, UI = False):
+        cropped = False
+        if rect.width < img.get_rect().width:
+            crop_w = rect.width
+            cropped = True
+        else:
+            crop_w = img.get_rect().width
+
+        if rect.height < img.get_rect().height:
+            crop_h = rect.height
+            cropped = True
+        else:
+            crop_h = img.get_rect().height
+
+        if cropped:
+            img = pygame.transform.scale(img, (crop_w, crop_h))
+
+        result = self.calc_rect_place_on_viewport(rect, not UI)
         if result is None:
             return
-        tmpRect, area = result
-        tmpRect.update(tmpRect.x + area.left, tmpRect.y + area.top, area.w, area.h)
-        
+        viewport_rect, area = result
+        viewport_rect.update(viewport_rect.x + area.left, viewport_rect.y + area.top, area.w, area.h)
+
         img = pygame.transform.scale(img, (rect.w * self.scale, rect.h * self.scale))
 
-        self.surface.blit(img, tmpRect, area)
+        self.surface.blit(img, viewport_rect, area)
 
     def draw(self, color, rect):
         result = self.calc_rect_place_on_viewport(rect)
         if result is None:
             return
-        tmpRect, area = result
-        tmpRect.update(tmpRect.x + area.left, tmpRect.y + area.top, area.w, area.h)
-        pygame.draw.rect(self.surface, color, tmpRect)
+        viewport_rect, area = result
+        viewport_rect.update(viewport_rect.x + area.left, viewport_rect.y + area.top, area.w, area.h)
+        pygame.draw.rect(self.surface, color, viewport_rect)
 
     def toggle_fullscreen(self):    
         tmp = self.surface.convert()

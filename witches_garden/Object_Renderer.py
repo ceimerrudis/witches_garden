@@ -4,6 +4,7 @@ from pygame.locals import *
 from Screen import Screen
 from Game_Data import Plant, Plant_Type
 
+
 def Get_Sprite(plant):
 	spritepath = "witches_garden/sprites/plant_tilemap/"
 	name = "grass1"
@@ -40,7 +41,6 @@ class Object_Renderer():
 		self.surface = screen
 		self.background = numpy.array([[Tilemap_Obj(None, pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16)) for i in range(game_data.field_size_y)] for j in range(game_data.field_size_x)], dtype=Tilemap_Obj)
 		self.plants = numpy.array([[Tilemap_Obj(None, pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16)) for i in range(game_data.field_size_y)] for j in range(game_data.field_size_x)], dtype=Tilemap_Obj)
-
 
 	def render(self, game_data):	
 		j = 0
