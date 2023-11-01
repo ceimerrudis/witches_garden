@@ -9,6 +9,7 @@ from Input_System import Input_System
 from UI_Renderer import UI_Renderer
 from Object_Renderer import Object_Renderer
 from Game_Data import Game_Data
+from UI_Logic_Controler import UI_Logic_Controler
 
 TICKS_PER_SECOND = 30
 SKIP_TIME = 1000 / TICKS_PER_SECOND
@@ -30,7 +31,8 @@ game_data = Game_Data()
 
 inputs = Input_System()
 obj_renderer = Object_Renderer(screen, game_data)
-ui_renderer = UI_Renderer(screen)
+ui_logic_ctrl = UI_Logic_Controler(game_data)
+ui_renderer = UI_Renderer(screen, ui_logic_ctrl)
 
 background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
 
@@ -55,10 +57,10 @@ while running:
     while (pygame.time.get_ticks() > next_game_tick and loops < MAX_FRAMESKIP):
         #get inputs
         inputs.get_inputs()
-    
+        
         #process the inputs
-        #only deals with game logic
-        game_data.update(inputs, delta_time)
+        ui_logic_ctrl.update(inputs)
+        game_data.update(inputs)
         
         next_game_tick += SKIP_TIME;
         loops += 1
@@ -73,7 +75,7 @@ while running:
     #render the game world
     obj_renderer.render(game_data)
     
-    #render the ui
+    #render all the elements in ui_logic_ctrl
     ui_renderer.render()
      
     pygame.display.update()

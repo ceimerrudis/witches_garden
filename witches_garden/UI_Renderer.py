@@ -118,18 +118,6 @@ def Get_Sprite(ui_element):
 
 	return pygame.image.load(spritepath + name + ".png")
 
-class UI_Object():
-    def __init__(self, image, rect, image_type):
-        self.image = image
-        self.rect = rect
-        self.image_type = image_type
-
-    image = None
-    rect = None
-    image_type = 0
-    #0 for normal image 
-    #1 for nine sliced
-
 def Draw_Nine_Sliced_Image(imageObject, surface):
     i = 0
     j = 0
@@ -147,24 +135,17 @@ def drawList(ui_obj_list, surface):
             Draw_Nine_Sliced_Image(item, surface)
         else:
             surface.blit(item.image, item.rect, True)
-
-class UI_Screen():
-    static = []
-    dynamic = []
-    
-    def draw(self, surface):        
-        drawList(self.static, surface)
-        drawList(self.dynamic, surface)
     
 class UI_Renderer():
-    def __init__(self, Screen):
+    def __init__(self, Screen, ui_logic_ctrl):
         self.surface = Screen
+        self.ui_logic_ctrl = ui_logic_ctrl
         btm_pnl_slice_val = (26, 26, 26, 26)
         btm_pnl_sliced_images, center_width, center_height = nine_slice(Get_Sprite("bottom"), btm_pnl_slice_val[0], btm_pnl_slice_val[1], btm_pnl_slice_val[2], btm_pnl_slice_val[3])
         btm_pnl_target_rect_on_viewport = pygame.Rect(0, self.surface.screen_min_height - 64, self.surface.screen_min_width, 64)
         btm_pnl_sliced_rect = Nine_Slice_Rect(btm_pnl_target_rect_on_viewport, btm_pnl_slice_val[0], btm_pnl_slice_val[1], btm_pnl_slice_val[2], btm_pnl_slice_val[3], center_width, center_height)
-        self.garden_UI.static = [UI_Object(btm_pnl_sliced_images, btm_pnl_sliced_rect, 1)]
-        #self.garden_UI.static = [UI_Object(Get_Sprite("bottom"), pygame.Rect(0, self.surface.screen_min_height - 64, self.surface.screen_min_width, 64), 0)]
+        self.garden_UI.static = [UI_Graphic(btm_pnl_sliced_images, btm_pnl_sliced_rect, 1)]
+        #self.garden_UI.static = [UI_Graphic(Get_Sprite("bottom"), pygame.Rect(0, self.surface.screen_min_height - 64, self.surface.screen_min_width, 64), 0)]
 
     def render(self):
         # self.surface.blit(Get_Sprite("bottom"), pygame.Rect(0, self.surface.screen_min_height - 64, self.surface.screen_min_width, 64))
@@ -176,4 +157,5 @@ class UI_Renderer():
 
     main_Menu = UI_Screen()
     garden_UI = UI_Screen()
+    ui_logic_ctrl = None
     surface = None
