@@ -16,6 +16,9 @@ class Screen():
     game_window = pygame.Rect((0, 0), (screen_min_width, screen_min_height))
     viewport = pygame.Rect(0, 0, screen_min_width, screen_min_height)
 
+    def Calc_Mouse_Viewport_Position(self, x, y):
+        return int((x - self.game_window.x) / self.scale), int((y - self.game_window.y) / self.scale)
+
     def move_camera(self, x, y):
         self.viewport.update(self.viewport.x + x, self.viewport.y + y, self.viewport.w, self.viewport.h)
 
@@ -70,6 +73,8 @@ class Screen():
             height = self.screen_min_height
         #viewports
         self.scale = min(self.surface.get_width() // self.screen_min_width, self.surface.get_height() // self.screen_min_height)
+        if self.scale == 0:
+            self.scale = 1
         game_window_width = self.scale * self.screen_min_width
         game_window_height = self.scale * self.screen_min_height
         game_window_top = (height - game_window_height) / 2

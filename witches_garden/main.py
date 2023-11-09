@@ -31,7 +31,7 @@ game_data = Game_Data()
 
 inputs = Input_System()
 obj_renderer = Object_Renderer(screen, game_data)
-ui_logic_ctrl = UI_Logic_Controler(game_data)
+ui_logic_ctrl = UI_Logic_Controler(game_data, screen)
 ui_renderer = UI_Renderer(screen, ui_logic_ctrl)
 
 background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
@@ -56,7 +56,7 @@ while running:
     loops = 0;
     while (pygame.time.get_ticks() > next_game_tick and loops < MAX_FRAMESKIP):
         #get inputs
-        inputs.get_inputs()
+        inputs.get_inputs(screen.Calc_Mouse_Viewport_Position)
         
         #process the inputs
         ui_logic_ctrl.update(inputs)

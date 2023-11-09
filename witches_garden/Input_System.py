@@ -47,8 +47,9 @@ class Input_System():
         self.garden = garden(self)
         self.utility = utility(self)
 
-    def get_inputs(self):
-        mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
+    def get_inputs(self, mouse_to_viewportmouse):
+        self.mouse_pos_x, self.mouse_pos_y = pygame.mouse.get_pos()
+        self.mouse_x, self.mouse_y = mouse_to_viewportmouse(self.mouse_pos_x, self.mouse_pos_y)
         mouse_presses = pygame.mouse.get_pressed()
         key = "mouse_0"
         if mouse_presses[0]:
@@ -103,6 +104,8 @@ class Input_System():
     
     mouse_pos_x = 0#position in pixels relative to window (0, 0) == top left corner
     mouse_pos_y = 0#position in pixels relative to window (0, 0) == top left corner
+    mouse_x = 0#Mouse position in game window pixels
+    mouse_y = 0#
 
     spectator_mode = None
     garden = None
