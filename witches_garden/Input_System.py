@@ -14,10 +14,63 @@ class garden():#keyset
         self.input_system = input_system
     
     def action(self):
-        return self.input_system.keys[self.action_key] 
+        return self.input_system.keys[self.action_key]
+
+    def plant(self):
+        return self.input_system.keys[self.plant_key]
+
+    def root(self):
+        return self.input_system.keys[self.root_key]
+
+    def end_turn(self):
+        return self.input_system.keys[self.end_turn_key]
+
+    def one(self):
+        return max(self.input_system.keys[self.one_key[0]], self.input_system.keys[self.one_key[1]])
+
+    def two(self):
+        return max(self.input_system.keys[self.two_key[0]], self.input_system.keys[self.two_key[1]])
+
+    def three(self):
+        return max(self.input_system.keys[self.three_key[0]], self.input_system.keys[self.three_key[1]])
+
+    def four(self):
+        return max(self.input_system.keys[self.four_key[0]], self.input_system.keys[self.four_key[1]])
+
+    def five(self):
+        return max(self.input_system.keys[self.five_key[0]], self.input_system.keys[self.five_key[1]])
+
+    def six(self):
+        return max(self.input_system.keys[self.six_key[0]], self.input_system.keys[self.six_key[1]])
+
+    def seven(self):
+        return max(self.input_system.keys[self.seven_key[0]], self.input_system.keys[self.seven_key[1]]) 
+
+    def eight(self):
+        return max(self.input_system.keys[self.eight_key[0]], self.input_system.keys[self.eight_key[1]])
+
+    def nine(self):
+        return max(self.input_system.keys[self.nine_key[0]], self.input_system.keys[self.nine_key[1]])
+
+    def zero(self):
+        return max(self.input_system.keys[self.zero_key[0]], self.input_system.keys[self.zero_key[1]])
 
     input_system = None
     action_key = "mouse_0"
+    plant_key = pygame.K_p
+    root_key = pygame.K_r
+    end_turn_key = pygame.K_e
+    
+    one_key = [pygame.K_1, pygame.K_KP1]
+    two_key = [pygame.K_2, pygame.K_KP2]
+    three_key = [pygame.K_3, pygame.K_KP3]
+    four_key = [pygame.K_4, pygame.K_KP4]
+    five_key = [pygame.K_5, pygame.K_KP5]
+    six_key = [pygame.K_6, pygame.K_KP6]
+    seven_key = [pygame.K_7, pygame.K_KP7]
+    eight_key = [pygame.K_8, pygame.K_KP8]
+    nine_key = [pygame.K_9, pygame.K_KP9]
+    zero_key = [pygame.K_0, pygame.K_KP0]
 
 class spectator_mode():#keyset
     def __init__(self, input_system):
@@ -97,6 +150,30 @@ class Input_System():
         pygame.K_a: 0, 
         pygame.K_s: 0, 
         pygame.K_d: 0, 
+        pygame.K_p: 0, 
+        pygame.K_r: 0, 
+        pygame.K_e: 0, 
+        pygame.K_0: 0, 
+        pygame.K_1: 0, 
+        pygame.K_2: 0, 
+        pygame.K_3: 0, 
+        pygame.K_4: 0, 
+        pygame.K_5: 0, 
+        pygame.K_6: 0, 
+        pygame.K_7: 0, 
+        pygame.K_8: 0, 
+        pygame.K_9: 0, 
+
+        pygame.K_KP0: 0, 
+        pygame.K_KP1: 0, 
+        pygame.K_KP2: 0, 
+        pygame.K_KP3: 0, 
+        pygame.K_KP4: 0, 
+        pygame.K_KP5: 0, 
+        pygame.K_KP6: 0, 
+        pygame.K_KP7: 0, 
+        pygame.K_KP8: 0, 
+        pygame.K_KP9: 0, 
         "mouse_0":  0,
         "mouse_2":  0,        
     }
