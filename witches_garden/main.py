@@ -58,7 +58,7 @@ while running:
     
         #process the inputs
         #only deals with game logic
-        game_data.update(inputs, delta_time)
+        game_data.update(inputs)
         
         next_game_tick += SKIP_TIME;
         loops += 1

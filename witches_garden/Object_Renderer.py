@@ -4,6 +4,14 @@ from pygame.locals import *
 from Screen import Screen
 from Game_Data import Plant, Plant_Type
 
+plant_stages = {#Must be ascending
+	"plot": [0],
+	"grass1": [0],
+	"grass2": [0],
+	"grass3": [0],
+	"grass4": [0],
+	"fireplant": [0, 10, 20],
+}
 
 def Get_Sprite(plant):
 	spritepath = "witches_garden/sprites/plant_tilemap/"
@@ -21,7 +29,11 @@ def Get_Sprite(plant):
 	elif plant.plant_type == Plant_Type.fireplant:
 		name = "fireplant"
 
-	name += "_age_" + str(plant.age)
+	current = 0
+	for possible_age in plant_stages[name]:
+		if plant.age >= possible_age:
+			current = possible_age
+	name += "_age_" + str(current)
 
 	return pygame.image.load(spritepath + name + ".png")
 
@@ -47,6 +59,7 @@ class Object_Renderer():
 		for x in game_data.game_field:
 			i = 0
 			for y in x:
+				y = y["plant"]
 				if y.plant_type == Plant_Type.plot or y.plant_type == Plant_Type.grass1 or y.plant_type == Plant_Type.grass2 or y.plant_type == Plant_Type.grass3 or y.plant_type == Plant_Type.grass4:
 					if not (self.background[i][j].p_type == y.plant_type and self.background[i][j].age == y.age):
 						self.background[i][j] = Tilemap_Obj(Get_Sprite(y), pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16), y.plant_type, y.age)
