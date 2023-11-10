@@ -27,6 +27,7 @@ class Object_Renderer():
 		for x in game_data.game_field:
 			i = 0
 			for y in x:
+                y = y["plant"]
 				if y.plant_type == Plant_Type.plot or y.plant_type == Plant_Type.grass1 or y.plant_type == Plant_Type.grass2 or y.plant_type == Plant_Type.grass3 or y.plant_type == Plant_Type.grass4:
 					if not (self.background[i][j].p_type == y.plant_type and self.background[i][j].age == y.age):
 						self.background[i][j] = Tilemap_Obj(Get_Plant_Sprite(y), pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16), y.plant_type, y.age)
