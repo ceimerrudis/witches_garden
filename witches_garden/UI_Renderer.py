@@ -13,13 +13,6 @@ def Draw_Nine_Sliced_Image(imageObject, surface):
             surface.blit(piece, imageObject.rects[j][0], True)
             j += 1
         i += 1
-
-def DrawList(ui_obj_list, surface):
-    for item in ui_obj_list:
-        if item.image_type == 1:
-            Draw_Nine_Sliced_Image(item, surface)
-        else:
-            surface.blit(item.image, item.rect, True)
     
 class UI_Renderer():
     def __init__(self, Screen, ui_logic_ctrl):
@@ -28,8 +21,11 @@ class UI_Renderer():
         
     def render(self):
         for screen in self.ui_logic_ctrl.active_screens:
-            DrawList(screen.static, self.surface)
-            DrawList(screen.dynamic, self.surface)
+            for item in screen.ui_objects:
+                if item.image_type == 1:
+                    Draw_Nine_Sliced_Image(item, self.surface)
+                else:
+                    self.surface.blit(item.image, item.rect, True)
 
     ui_logic_ctrl = None
     surface = None
