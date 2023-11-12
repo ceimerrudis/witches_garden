@@ -3,18 +3,18 @@ from pygame.locals import *
 
 class Screen():
     def __init__(self):
-        self.surface = pygame.display.set_mode((self.screen_min_width, self.screen_min_height), RESIZABLE | HWSURFACE)
+        self.surface = pygame.display.set_mode((self.screen_width, self.screen_height), RESIZABLE | HWSURFACE)
         w,h=self.surface.get_size()
         self.resize(w, h)
 
-    screen_min_width = 176 + 48
-    screen_min_height = 176 + 64
-    old_window_size_x = screen_min_width
-    old_window_size_y = screen_min_height
+    screen_width = 176 + 48
+    screen_height = 176 + 64
+    old_window_size_x = screen_width
+    old_window_size_y = screen_height
     surface = None
     scale = 4
-    game_window = pygame.Rect((0, 0), (screen_min_width, screen_min_height))
-    viewport = pygame.Rect(0, 0, screen_min_width, screen_min_height)
+    game_window = pygame.Rect((0, 0), (screen_width, screen_height))
+    viewport = pygame.Rect(0, 0, screen_width, screen_height)
 
     def Calc_Mouse_Viewport_Position(self, x, y):
         return int((x - self.game_window.x) / self.scale), int((y - self.game_window.y) / self.scale)
@@ -67,16 +67,16 @@ class Screen():
         return tmpRect, area
 
     def resize(self, width, height, resize_window = True):
-        if width < self.screen_min_width:
-            width = self.screen_min_width
-        if height < self.screen_min_height:
-            height = self.screen_min_height
+        if width < self.screen_width:
+            width = self.screen_width
+        if height < self.screen_height:
+            height = self.screen_height
         #viewports
-        self.scale = min(self.surface.get_width() // self.screen_min_width, self.surface.get_height() // self.screen_min_height)
+        self.scale = min(self.surface.get_width() // self.screen_width, self.surface.get_height() // self.screen_height)
         if self.scale == 0:
             self.scale = 1
-        game_window_width = self.scale * self.screen_min_width
-        game_window_height = self.scale * self.screen_min_height
+        game_window_width = self.scale * self.screen_width
+        game_window_height = self.scale * self.screen_height
         game_window_top = (height - game_window_height) / 2
         game_window_left = (width - game_window_width) / 2
         self.game_window.update(game_window_left, game_window_top, game_window_width, game_window_height)
