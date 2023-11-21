@@ -1,8 +1,6 @@
 #! ../witches_garden_env/Scripts/python
-
 import pygame
 from pygame.locals import *
-import numpy
 from random import randint
 from Screen import Screen
 from Input_System import Input_System
@@ -10,6 +8,12 @@ from UI_Renderer import UI_Renderer
 from Object_Renderer import Object_Renderer
 from Game_Data import Game_Data
 from UI_Logic_Controler import UI_Logic_Controler
+
+def Start_Game(parameters):
+    #create game
+    game_data.Initialize()
+    obj_renderer.Initialize(game_data)
+    ui_logic_ctrl.Initialize_Game_Screen(screen)
 
 TICKS_PER_SECOND = 30
 SKIP_TIME = 1000 / TICKS_PER_SECOND
@@ -27,11 +31,12 @@ screen.fill(black)
 clock = pygame.time.Clock()
 next_game_tick = pygame.time.get_ticks()
 
-game_data = Game_Data()
-
 inputs = Input_System()
-obj_renderer = Object_Renderer(screen, game_data)
-ui_logic_ctrl = UI_Logic_Controler(game_data, screen)
+
+game_data = Game_Data()
+obj_renderer = Object_Renderer(screen)
+
+ui_logic_ctrl = UI_Logic_Controler(game_data, screen, Start_Game)
 ui_renderer = UI_Renderer(screen, ui_logic_ctrl)
 
 background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
@@ -60,7 +65,8 @@ while running:
         
         #process the inputs
         ui_logic_ctrl.update(inputs)
-        game_data.update(inputs)
+        if game_data.initialized == True:
+            game_data.update(inputs)
         
         next_game_tick += SKIP_TIME;
         loops += 1
@@ -69,11 +75,15 @@ while running:
     if(inputs.utility.fullscreen() == 2):
         screen.toggle_fullscreen()
 
-    screen.set_camera_pos(game_data.camera_pos)
+    if game_data.initialized == True:
+        screen.set_camera_pos(game_data.camera_pos)
+    else:
+        screen.set_camera_pos((0, 0))
     
     #render the game
     #render the game world
-    obj_renderer.render(game_data)
+    if obj_renderer.initialized == True:
+        obj_renderer.render(game_data)
     
     #render all the elements in ui_logic_ctrl
     ui_renderer.render()
@@ -81,7 +91,6 @@ while running:
     pygame.display.update()
 
 pygame.quit()
-
 
 
 

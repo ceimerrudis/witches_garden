@@ -15,6 +15,9 @@ def Draw_Nine_Sliced_Image(imageObject, surface):
         i += 1
     
 class UI_Renderer():
+    ui_logic_ctrl = None
+    surface = None
+
     def __init__(self, Screen, ui_logic_ctrl):
         self.surface = Screen
         self.ui_logic_ctrl = ui_logic_ctrl
@@ -26,6 +29,4 @@ class UI_Renderer():
                     Draw_Nine_Sliced_Image(item, self.surface)
                 else:
                     self.surface.blit(item.image, item.rect, True)
-
-    ui_logic_ctrl = None
-    surface = None
+        

@@ -1,17 +1,50 @@
 import pygame
 class utility():#keyset
+    input_system = None
+    fullscreen_key = None
+
     def __init__(self, input_system):
         self.input_system = input_system
+        self.fullscreen_key = pygame.K_F11
     
     def fullscreen(self):
         return self.input_system.keys[self.fullscreen_key] 
 
-    input_system = None
-    fullscreen_key = pygame.K_F11
-
 class garden():#keyset
+    input_system = None
+    action_key = None
+    plant_key = None
+    root_key = None
+    end_turn_key = None
+    
+    one_key = None
+    two_key = None
+    three_key = None
+    four_key = None
+    five_key = None
+    six_key = None
+    seven_key = None
+    eight_key = None
+    nine_key = None
+    zero_key = None
+
     def __init__(self, input_system):
         self.input_system = input_system
+        self.action_key = "mouse_0"
+        self.plant_key = pygame.K_p
+        self.root_key = pygame.K_r
+        self.end_turn_key = pygame.K_e
+    
+        self.one_key = [pygame.K_1, pygame.K_KP1]
+        self.two_key = [pygame.K_2, pygame.K_KP2]
+        self.three_key = [pygame.K_3, pygame.K_KP3]
+        self.four_key = [pygame.K_4, pygame.K_KP4]
+        self.five_key = [pygame.K_5, pygame.K_KP5]
+        self.six_key = [pygame.K_6, pygame.K_KP6]
+        self.seven_key = [pygame.K_7, pygame.K_KP7]
+        self.eight_key = [pygame.K_8, pygame.K_KP8]
+        self.nine_key = [pygame.K_9, pygame.K_KP9]
+        self.zero_key = [pygame.K_0, pygame.K_KP0]
     
     def action(self):
         return self.input_system.keys[self.action_key]
@@ -55,26 +88,19 @@ class garden():#keyset
     def zero(self):
         return max(self.input_system.keys[self.zero_key[0]], self.input_system.keys[self.zero_key[1]])
 
-    input_system = None
-    action_key = "mouse_0"
-    plant_key = pygame.K_p
-    root_key = pygame.K_r
-    end_turn_key = pygame.K_e
-    
-    one_key = [pygame.K_1, pygame.K_KP1]
-    two_key = [pygame.K_2, pygame.K_KP2]
-    three_key = [pygame.K_3, pygame.K_KP3]
-    four_key = [pygame.K_4, pygame.K_KP4]
-    five_key = [pygame.K_5, pygame.K_KP5]
-    six_key = [pygame.K_6, pygame.K_KP6]
-    seven_key = [pygame.K_7, pygame.K_KP7]
-    eight_key = [pygame.K_8, pygame.K_KP8]
-    nine_key = [pygame.K_9, pygame.K_KP9]
-    zero_key = [pygame.K_0, pygame.K_KP0]
-
 class spectator_mode():#keyset
+    input_system = None
+    w_key = None
+    a_key = None
+    s_key = None
+    d_key = None
+
     def __init__(self, input_system):
         self.input_system = input_system
+        self.w_key = pygame.K_w
+        self.a_key = pygame.K_a
+        self.s_key = pygame.K_s
+        self.d_key = pygame.K_d
     
     def w(self):
         return self.input_system.keys[self.w_key] 
@@ -88,17 +114,62 @@ class spectator_mode():#keyset
     def d(self):
         return self.input_system.keys[self.d_key] 
 
-    input_system = None
-    w_key = pygame.K_w
-    a_key = pygame.K_a
-    s_key = pygame.K_s
-    d_key = pygame.K_d
-
 class Input_System():
+    #0 means not clicked 2 means just clicked 3 means held # 1 means released
+    keys = None
+    
+    mouse_pos_x = None#position in pixels relative to window (0, 0) == top left corner
+    mouse_pos_y = None#position in pixels relative to window (0, 0) == top left corner
+    mouse_x = None#Mouse position in game window pixels
+    mouse_y = None#
+
+    spectator_mode = None
+    garden = None
+    utility = None
+
     def __init__(self):
         self.spectator_mode = spectator_mode(self)
         self.garden = garden(self)
         self.utility = utility(self)
+
+        self.keys = {
+            pygame.K_F11: 0, 
+            pygame.K_w: 0, 
+            pygame.K_a: 0, 
+            pygame.K_s: 0, 
+            pygame.K_d: 0, 
+            pygame.K_p: 0, 
+            pygame.K_r: 0, 
+            pygame.K_e: 0, 
+            pygame.K_0: 0, 
+            pygame.K_1: 0, 
+            pygame.K_2: 0, 
+            pygame.K_3: 0, 
+            pygame.K_4: 0, 
+            pygame.K_5: 0, 
+            pygame.K_6: 0, 
+            pygame.K_7: 0, 
+            pygame.K_8: 0, 
+            pygame.K_9: 0, 
+
+            pygame.K_KP0: 0, 
+            pygame.K_KP1: 0, 
+            pygame.K_KP2: 0, 
+            pygame.K_KP3: 0, 
+            pygame.K_KP4: 0, 
+            pygame.K_KP5: 0, 
+            pygame.K_KP6: 0, 
+            pygame.K_KP7: 0, 
+            pygame.K_KP8: 0, 
+            pygame.K_KP9: 0, 
+            "mouse_0":  0,
+            "mouse_2":  0,        
+        }
+    
+        self.mouse_pos_x = 0
+        self.mouse_pos_y = 0
+        self.mouse_x = 0
+        self.mouse_y = 0
 
     def get_inputs(self, mouse_to_viewportmouse):
         self.mouse_pos_x, self.mouse_pos_y = pygame.mouse.get_pos()
@@ -143,47 +214,3 @@ class Input_System():
                         self.keys[key_id] = 1
                     else:
                         self.keys[key_id] = 0
-
-    #0 means not clicked 2 means just clicked 3 means held # 1 means released
-    keys = {
-        pygame.K_F11: 0, 
-        pygame.K_w: 0, 
-        pygame.K_a: 0, 
-        pygame.K_s: 0, 
-        pygame.K_d: 0, 
-        pygame.K_p: 0, 
-        pygame.K_r: 0, 
-        pygame.K_e: 0, 
-        pygame.K_0: 0, 
-        pygame.K_1: 0, 
-        pygame.K_2: 0, 
-        pygame.K_3: 0, 
-        pygame.K_4: 0, 
-        pygame.K_5: 0, 
-        pygame.K_6: 0, 
-        pygame.K_7: 0, 
-        pygame.K_8: 0, 
-        pygame.K_9: 0, 
-
-        pygame.K_KP0: 0, 
-        pygame.K_KP1: 0, 
-        pygame.K_KP2: 0, 
-        pygame.K_KP3: 0, 
-        pygame.K_KP4: 0, 
-        pygame.K_KP5: 0, 
-        pygame.K_KP6: 0, 
-        pygame.K_KP7: 0, 
-        pygame.K_KP8: 0, 
-        pygame.K_KP9: 0, 
-        "mouse_0":  0,
-        "mouse_2":  0,        
-    }
-    
-    mouse_pos_x = 0#position in pixels relative to window (0, 0) == top left corner
-    mouse_pos_y = 0#position in pixels relative to window (0, 0) == top left corner
-    mouse_x = 0#Mouse position in game window pixels
-    mouse_y = 0#
-
-    spectator_mode = None
-    garden = None
-    utility = None

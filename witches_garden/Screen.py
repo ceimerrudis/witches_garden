@@ -2,19 +2,28 @@ import pygame
 from pygame.locals import *
 
 class Screen():
+    screen_width = None
+    screen_height = None
+    old_window_size_x = None
+    old_window_size_y = None
+    surface = None
+    scale = None
+    game_window = None
+    viewport = None
+
     def __init__(self):
+        self.screen_width = 176 + 48
+        self.screen_height = 176 + 64
+        self.old_window_size_x = self.screen_width
+        self.old_window_size_y = self.screen_height
+        self.surface = None
+        self.scale = 4
+        self.game_window = pygame.Rect((0, 0), (self.screen_width, self.screen_height))
+        self.viewport = pygame.Rect(0, 0, self.screen_width, self.screen_height)
+
         self.surface = pygame.display.set_mode((self.screen_width, self.screen_height), RESIZABLE | HWSURFACE)
         w,h=self.surface.get_size()
         self.resize(w, h)
-
-    screen_width = 176 + 48
-    screen_height = 176 + 64
-    old_window_size_x = screen_width
-    old_window_size_y = screen_height
-    surface = None
-    scale = 4
-    game_window = pygame.Rect((0, 0), (screen_width, screen_height))
-    viewport = pygame.Rect(0, 0, screen_width, screen_height)
 
     def Calc_Mouse_Viewport_Position(self, x, y):
         return int((x - self.game_window.x) / self.scale), int((y - self.game_window.y) / self.scale)
