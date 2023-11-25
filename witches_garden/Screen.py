@@ -158,3 +158,8 @@ class Screen():
         pygame.key.set_mods(0) #HACK: work-a-round for a SDL bug??
     
         return self.surface
+
+    def ScreenToWorldPos(self, x, y):
+        x = x + self.viewport.x
+        y = y + self.viewport.y
+        return x, y

@@ -2,24 +2,10 @@ import pygame
 from pygame.locals import *
 from Screen import Screen
 from Game_Data import Plant, Plant_Type
-from Get_Sprite import Get_Sprite, Get_Plant_Sprite
-
-class Tilemap_Obj():
-	def __init__(self, img, rect, p_type = None, age = 0):
-		self.image = img
-		self.rect = rect
-		self.p_type = p_type
-		self.age = age
-	p_type = None
-	age = 0
-	rect = None
-	image = None
+from Get_Sprite import Get_Plant_Sprite
+from Display_Objects import Tile_Obj
 
 class Object_Renderer():
-	#tilemaps
-	background = None
-	plants = None
-
 	surface = None
 	initialized = None
 
@@ -27,32 +13,32 @@ class Object_Renderer():
 		self.surface = screen
 		self.initialized = False
 
-	def Initialize(self, game_data):
-		tile_size_x = 16
-		tile_size_y = 16
-		self.background = [ [Tilemap_Obj(None, pygame.Rect(j * tile_size_x, (game_data.field_size_y * tile_size_y) - (i * tile_size_y), tile_size_x, tile_size_y)) for i in range(game_data.field_size_y)] for j in range(game_data.field_size_x)]
-		self.plants = [ [Tilemap_Obj(None, pygame.Rect(j * tile_size_x, (game_data.field_size_y * tile_size_y) - (i * tile_size_y), tile_size_x, tile_size_y)) for i in range(game_data.field_size_y)] for j in range(game_data.field_size_x)]
+	def Initialize(self):
 		self.initialized = True
 
-	def render(self, game_data):	
+	def render(self, game_data, scene):	
 		if game_data.initialized == True:
 			j = 0
 			for x in game_data.game_field:
 				i = 0
 				for y in x:
-					#print(y)
 					y = y["plant"]
-					#print(y)
-					if y.plant_type == Plant_Type.plot or y.plant_type == Plant_Type.grass1 or y.plant_type == Plant_Type.grass2 or y.plant_type == Plant_Type.grass3 or y.plant_type == Plant_Type.grass4:
-						if not (self.background[i][j].p_type == y.plant_type and self.background[i][j].age == y.age):
-							self.background[i][j] = Tilemap_Obj(Get_Plant_Sprite(y), pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16), y.plant_type, y.age)
+
+					plnt = scene.plants.Get_Tile(i, j)
+					bckgrnd = scene.background.Get_Tile(i, j)
+
+					if	y.plant_type == Plant_Type.plot or y.plant_type == Plant_Type.grass1 or y.plant_type == Plant_Type.grass2 or y.plant_type == Plant_Type.grass3 or y.plant_type == Plant_Type.grass4:
+						if not (bckgrnd.p_type == y.plant_type and bckgrnd.age == y.age):
+							scene.background.Set_Tile(i, j, Tile_Obj(Get_Plant_Sprite(y), bckgrnd.rect, p_type = y.plant_type, age = y.age))
 					else:
-						if not (self.plants[i][j].p_type == y.plant_type and self.plants[i][j].age == y.age):
-							self.plants[i][j] = Tilemap_Obj(Get_Plant_Sprite(y), pygame.Rect(j * 16, (game_data.field_size_y * 16) - (i * 16), 16, 16), y.plant_type, y.age)
+						if not (plnt.p_type == y.plant_type and plnt.age == y.age):
+							#print(plnt.p_type)
+							#print(plnt.age)
+							scene.plants.Set_Tile(i, j, Tile_Obj(Get_Plant_Sprite(y), plnt.rect, p_type = y.plant_type, age = y.age))
 				
-					if not self.background[i][j].image == None:
-						self.surface.blit(self.background[i][j].image, self.background[i][j].rect)
-					if not self.plants[i][j].image == None:
-						self.surface.blit(self.plants[i][j].image, self.plants[i][j].rect)
+					if not bckgrnd.image == None:
+						self.surface.blit(bckgrnd.image, bckgrnd.rect)
+					if not plnt.image == None:
+						self.surface.blit(plnt.image, plnt.rect)
 					i += 1
 				j += 1

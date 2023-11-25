@@ -12,8 +12,8 @@ from UI_Logic_Controler import UI_Logic_Controler
 def Start_Game(parameters):
     #create game
     game_data.Initialize()
-    obj_renderer.Initialize(game_data)
-    ui_logic_ctrl.Initialize_Game_Screen(screen)
+    obj_renderer.Initialize()
+    ui_logic_ctrl.Initialize_Game_Screen(screen, game_data)
 
 TICKS_PER_SECOND = 30
 SKIP_TIME = 1000 / TICKS_PER_SECOND
@@ -83,7 +83,7 @@ while running:
     #render the game
     #render the game world
     if obj_renderer.initialized == True:
-        obj_renderer.render(game_data)
+        obj_renderer.render(game_data, ui_logic_ctrl.scene)
     
     #render all the elements in ui_logic_ctrl
     ui_renderer.render()
