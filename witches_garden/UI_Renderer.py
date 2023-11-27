@@ -21,7 +21,7 @@ class UI_Renderer():
     def __init__(self, Screen, ui_logic_ctrl):
         self.surface = Screen
         self.ui_logic_ctrl = ui_logic_ctrl
-        
+
     def render(self):
         for screen in self.ui_logic_ctrl.active_screens:
             for item in screen.ui_objects:

@@ -30,10 +30,11 @@ class Object_Renderer():
 					if	y.plant_type == Plant_Type.plot or y.plant_type == Plant_Type.grass1 or y.plant_type == Plant_Type.grass2 or y.plant_type == Plant_Type.grass3 or y.plant_type == Plant_Type.grass4:
 						if not (bckgrnd.p_type == y.plant_type and bckgrnd.age == y.age):
 							scene.background.Set_Tile(i, j, Tile_Obj(Get_Plant_Sprite(y), bckgrnd.rect, p_type = y.plant_type, age = y.age))
+
+						if not plnt.p_type == None:
+							scene.plants.Set_Tile(i, j, Tile_Obj(None, plnt.rect))
 					else:
 						if not (plnt.p_type == y.plant_type and plnt.age == y.age):
-							#print(plnt.p_type)
-							#print(plnt.age)
 							scene.plants.Set_Tile(i, j, Tile_Obj(Get_Plant_Sprite(y), plnt.rect, p_type = y.plant_type, age = y.age))
 				
 					if not bckgrnd.image == None:
