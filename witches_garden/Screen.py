@@ -96,7 +96,7 @@ class Screen():
     def fill(self, color):
         self.surface.fill(color)
 
-    def blit(self, img, rect, UI = False):
+    def blit(self, img, rect, UI = False, scale = True):
         cropped = False
         if rect.width < img.get_rect().width:
             crop_w = rect.width
@@ -119,7 +119,11 @@ class Screen():
         viewport_rect, area = result
         viewport_rect.update(viewport_rect.x + area.left, viewport_rect.y + area.top, area.w, area.h)
 
-        img = pygame.transform.scale(img, (rect.w * self.scale, rect.h * self.scale))
+        if scale:
+            img = pygame.transform.scale(img, (rect.w * self.scale, rect.h * self.scale))
+        else:
+            a = max((4-self.scale), 1)
+            img = pygame.transform.scale(img, (rect.w / a, rect.h / a))
 
         self.surface.blit(img, viewport_rect, area)
 

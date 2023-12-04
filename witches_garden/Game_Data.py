@@ -26,7 +26,7 @@ class Plant():
 
 def Get_Field(num):
 	if num == 0:
-		return [
+		return ([
 		(3, 8),
 		(4, 8),
 		(5, 8),
@@ -63,7 +63,27 @@ def Get_Field(num):
 			 
 		(3, 0),
 		(4, 0),
-		(5, 0)]
+		(5, 0)], 
+
+		[
+		(4, 0),
+		(5, 0),
+		(7, 1),
+		(8, 3),
+		(8, 4),
+		(8, 5),
+		(7, 7),
+		(3, 8),
+		(4, 8),
+		(5, 8),
+		(1, 7),
+		(0, 3),
+		(0, 4),
+		(0, 5),
+		(1, 1),
+		(3, 0),
+		],
+		9, 9)
 	else:
 		return []
 
@@ -75,6 +95,8 @@ class Game_Data():
 	seeds = None
 	camera_pos = None
 	initialized = None
+	magic_circle = None
+	score = None
 
 	def __init__(self):
 		self.action_q = []
@@ -82,11 +104,15 @@ class Game_Data():
 		self.field_size_y = 9
 		self.camera_pos = [0, 16]
 		self.initialized = False
+		self.score = 0
 
 	def Initialize(self):
 		self.game_field = [[{"plant": Plant(), "growable": False } for i in range(self.field_size_y)] for j in range(self.field_size_x)]
-		field = Get_Field(0)
-
+		field_obj = Get_Field(0)
+		self.field_size_x = field_obj[2]
+		self.field_size_y = field_obj[3]
+		field = field_obj[0]
+		self.magic_circle = field_obj[1]
 		for item in field:
 			self.Set_New_Plant(self.game_field[item[0]][item[1]]["plant"], Plant_Type.plot)
 			self.game_field[item[0]][item[1]]["growable"] = True
@@ -102,6 +128,28 @@ class Game_Data():
 			for i in range(5):
 				self.seeds[Plant_Type(i + 6)] = 6 + i
 
+	def Get_Plant_Effect(plant_type):
+	
+		light = None
+		water = None
+		charge = None
+		bugs = None
+		poison = None
+		flags = None
+
+	def Get_Plant_Conditions(plant_type):
+		plant_type = None
+		age = None
+		light = None
+		water = None
+		charge = None
+		bugs = None
+		poison = None
+		flags = None
+
+	def Get_Plant_Event(plant_type, age):
+		pass
+
 	def Set_New_Plant(self, plantToSet, plantType):
 		plantToSet.age = 0
 		plantToSet.plant_type = plantType
@@ -113,6 +161,9 @@ class Game_Data():
 			for plant in row:
 				plant["plant"].age += 10
 		self.action_q.clear()
+
+		for item in self.magic_circle:
+			pass
 
 	def Plant(self, target_x, target_y, seed_type):
 		if not ((target_x < len(self.game_field) and target_x >= 0) and (target_y < len(self.game_field[target_x]) and target_y >= 0)):
@@ -178,7 +229,7 @@ class Game_Data():
 			return self.game_field[x][y]["plant"]
 
 	def update(self, inputs):
-		camera_pos_change = [0, 0]
+		"""camera_pos_change = [0, 0]
 		if(inputs.spectator_mode.w() >= 2):
 			camera_pos_change[1] += -2
 		if(inputs.spectator_mode.s() >= 2):
@@ -188,7 +239,7 @@ class Game_Data():
 		if(inputs.spectator_mode.d() >= 2):
 			camera_pos_change[0] +=  2
 		self.camera_pos[0] += camera_pos_change[0]
-		self.camera_pos[1] += camera_pos_change[1]
+		self.camera_pos[1] += camera_pos_change[1]"""
 
-		if inputs.garden.end_turn() == 2:
-			self.End_Turn()
+		#if inputs.garden.end_turn() == 2:
+			#self.End_Turn()

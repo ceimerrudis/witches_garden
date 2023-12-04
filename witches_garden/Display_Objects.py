@@ -161,6 +161,7 @@ class Game_Screen(UI_Screen):
     text_pannel = None
     text_pannel_text_objs = None
     game_data = None
+    score_obj = None
 
     def __init__(self, screen_width, screen_height, game_data, logic_controler):
         super().__init__()
@@ -177,9 +178,9 @@ class Game_Screen(UI_Screen):
         self.fonts = {}
         pygame.font.init()
         self.fonts["default"] = pygame.font.SysFont(None, 24)
-        self.fonts["seed_count"] = pygame.font.SysFont(None, 14)
-        self.fonts["info"] = pygame.font.SysFont(None, 18)
-        #self.Create_Text_Object("default", "my_text", 100, 100)
+        self.fonts["seed_count"] = pygame.font.SysFont(None, 40)
+        self.fonts["info"] = pygame.font.SysFont(None, 30)
+        self.fonts["score"] = pygame.font.SysFont(None, 40)
 
         #slice_values
         l, t, r, b = 26, 26, 26, 26
@@ -209,6 +210,9 @@ class Game_Screen(UI_Screen):
         rect = pygame.Rect(screen_width - 48, 0, 48, 128)
         self.text_pannel = UI_Object(img, 0, 0, 0, rect = rect)
         self.Add_Object(self.text_pannel)
+
+        self.score_obj = self.Create_Text_Object("score", "score: 0", self.text_pannel.rect.x + 4, self.text_pannel.rect.y + 73)
+        self.score_obj.score = 0
 
         img = Get_Sprite("hourglass")
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 4 - 16, 16, 16)
@@ -250,17 +254,24 @@ class Game_Screen(UI_Screen):
 
         super().update(input_sys)
 
-        #displaying info about the pant under cursor
+        #displaying info about the plant under cursor
         plant_map = self.ui_logic_controler.scene.plants 
         x, y = self.ui_logic_controler.surface.ScreenToWorldPos(input_sys.mouse_x, input_sys.mouse_y)
         x, y = plant_map.Get_Map_Pos_From_World_pos(x, y)
         plant = self.game_data.Get_Plant(x, y)
         self.Display_Plant_Info(plant)
 
-        self.Update_Seed_List()
+        #displaying the correct score
+        if not self.score_obj.score == self.game_data.score:
+            self.score_obj.score = self.game_data.score
+            score_txt = "score: " + str(self.score_obj.score)
+            sz = self.fonts["score"].size(score_txt)
+            self.score_obj.rect.w = sz[0]
+            self.score_obj.rect.h = sz[1]
+            
+            self.score_obj.image = self.fonts["score"].render(score_txt, False, (255,255,255))
 
-    def Display_Seed_Info(self, seed):
-        pass
+        self.Update_Seed_List()
 
     def Display_Plant_Info(self, plant):
         if self.text_pannel == None:
@@ -286,7 +297,7 @@ class Game_Screen(UI_Screen):
                 info = str(plant.age)
             if i == 4:
                 info = str(plant.age)
-            obj = self.Create_Text_Object("info", info, self.text_pannel.rect.x + 10, self.text_pannel.rect.y + 5 + (12 * i))
+            obj = self.Create_Text_Object("info", info, self.text_pannel.rect.x + 6, self.text_pannel.rect.y + 5 + (12 * i))
             self.text_pannel_text_objs.append(obj)
 
 

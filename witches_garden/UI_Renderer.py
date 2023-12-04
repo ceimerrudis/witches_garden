@@ -28,5 +28,9 @@ class UI_Renderer():
                 if item.image_type == 1:
                     Draw_Nine_Sliced_Image(item, self.surface)
                 else:
-                    self.surface.blit(item.image, item.rect, True)
+                    if item.object_type == 2:
+                        #to preserve text resolution do not scale
+                        self.surface.blit(item.image, item.rect, True, False)
+                    else:
+                        self.surface.blit(item.image, item.rect, True)
         
