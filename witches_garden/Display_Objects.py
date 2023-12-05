@@ -285,19 +285,31 @@ class Game_Screen(UI_Screen):
             self.text_pannel_text_objs.clear()
         if plant == None:
             return
+        if plant.plant_type == Plant_Type.plot or plant.plant_type == Plant_Type.grass1 or plant.plant_type == Plant_Type.grass2 or plant.plant_type == Plant_Type.grass3 or plant.plant_type == Plant_Type.grass4:
+            return
         info = "test"    
-        for i in range(5):
+        for i in range(8):
             if i == 0:
-                info = plant.plant_type.name
+                info = "plant: " + plant.plant_type.name
             if i == 1:
-                info = str(plant.age)
+                info = "age: " + str(plant.age)
             if i == 2:
-                info = str(plant.age)
+                info = "light: " + str(plant.light)
             if i == 3:
-                info = str(plant.age)
+                info = "temperature: " + str(plant.temperature)
             if i == 4:
-                info = str(plant.age)
-            obj = self.Create_Text_Object("info", info, self.text_pannel.rect.x + 6, self.text_pannel.rect.y + 5 + (12 * i))
+                info = "water: " + str(plant.water)
+            if i == 5:
+                info = "charge: " + str(plant.charge)
+            if i == 6:
+                info = "bugs: " + str(plant.bugs)
+            if i == 7:
+                info = "poison: " + str(plant.poison)
+            if i == 8:
+                info = "flags: " + str(plant.flags)
+            
+            x, y = self.text_pannel.rect.x + 3, self.text_pannel.rect.y + 5 + (8 * i)
+            obj = self.Create_Text_Object("info", info, x, y)
             self.text_pannel_text_objs.append(obj)
 
 
@@ -356,6 +368,7 @@ class Game_Screen(UI_Screen):
                     
                     self.seed_obj_list.append(seed_obj)
                     self.seed_obj_list.append(self.Create_Text_Object("seed_count", str(self.seed_list[i][1]), inner_rect.x + 20, inner_rect.y + 20))
+                    self.seed_obj_list.append(self.Create_Text_Object("info", str(Plant_Type(self.seed_list[i][0]).name), inner_rect.x + 6, inner_rect.y + 28))
                     self.Add_Object(seed_obj)
 
 class Game_Scene():

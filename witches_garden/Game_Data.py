@@ -1,9 +1,11 @@
 from Input_System import Input_System
 from Enums import Plant_Type
+import random
 
 class Plant():
 	plant_type = None
 	age = None
+	temperature = None
 	light = None
 	water = None
 	charge = None
@@ -16,6 +18,7 @@ class Plant():
 		self.age = 0
 		self.flags = {}
 		self.light = 0
+		self.temperature = 0
 		self.water = 0
 		self.charge = 0
 		self.bugs = 0
@@ -73,19 +76,74 @@ def Get_Field(num):
 		(8, 4),
 		(8, 5),
 		(7, 7),
-		(3, 8),
-		(4, 8),
 		(5, 8),
+		(4, 8),
+		(3, 8),
 		(1, 7),
-		(0, 3),
-		(0, 4),
 		(0, 5),
+		(0, 4),
+		(0, 3),
 		(1, 1),
 		(3, 0),
 		],
-		9, 9)
+		9, 9,
+		{ "temperature": 20, "light": 30, "water": 20, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
+		)
 	else:
 		return []
+
+def Apply_Effects(effects, plant):
+	#applies the effects of the circle to the designated tile
+	plant.temperature += effects["temperature"]
+	plant.light += effects["light"]
+	if plant.light < 0:
+		plant.light = 0
+	plant.water += effects["water"]
+	if plant.water < 0:
+		plant.water = 0
+	plant.charge += effects["charge"]
+	if plant.charge < 0:
+		plant.charge = 0
+	plant.poison += effects["poison"]
+	if plant.poison < 0:
+		plant.poison = 0
+	plant.bugs += effects["bugs"]
+	if plant.bugs < 0:
+		plant.bugs = 0
+	plant.flags = { k: plant.flags.get(k, 0) + effects["flags"].get(k, 0) for k in set(plant.flags) | set(effects["flags"]) }
+
+def Get_Plant_Effect(plant_type, age = 0):
+	if plant_type == Plant_Type.fireplant:
+		return { "temperature": 3 * (age // 5), "light": 2 * (age // 5), "water": -5, "charge": 10 * (age // 10), "bugs": -5, "poison": 0, "flags": {} }
+	return { "temperature": 0, "light": 0, "water": 0, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
+
+def Get_Plant_Conditions(plant_type):
+	if plant_type == Plant_Type.hrelay:
+		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
+	if plant_type == Plant_Type.brelay:
+		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
+	if plant_type == Plant_Type.drelay:
+		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
+	if plant_type == Plant_Type.fireplant:
+		return { "temperature": 10, "light": 10, "water": 30, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
+	return { "temperature": 0, "light": 0, "water": 0, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
+
+def Calculate_Growth(plant, conditions):
+	growth = 60
+	growth -= abs(plant.temperature - conditions["temperature"])
+	growth -= abs(plant.light - conditions["light"])
+	growth -= abs(plant.water - conditions["water"])
+	growth -= abs(plant.charge - conditions["charge"])
+	growth -= abs(plant.poison - conditions["poison"])
+	growth -= abs(plant.bugs - conditions["bugs"])
+
+	#TODO make flags like on fire decrease growth
+
+	if growth < 0:
+		growth = 0
+	if growth > 20:
+		growth = 20
+	return growth
 
 class Game_Data():
 	action_q = None
@@ -97,6 +155,7 @@ class Game_Data():
 	initialized = None
 	magic_circle = None
 	score = None
+	outside_conditions = None
 
 	def __init__(self):
 		self.action_q = []
@@ -113,6 +172,7 @@ class Game_Data():
 		self.field_size_y = field_obj[3]
 		field = field_obj[0]
 		self.magic_circle = field_obj[1]
+		self.outside_conditions = field_obj[4]
 		for item in field:
 			self.Set_New_Plant(self.game_field[item[0]][item[1]]["plant"], Plant_Type.plot)
 			self.game_field[item[0]][item[1]]["growable"] = True
@@ -128,42 +188,135 @@ class Game_Data():
 			for i in range(5):
 				self.seeds[Plant_Type(i + 6)] = 6 + i
 
-	def Get_Plant_Effect(plant_type):
-	
-		light = None
-		water = None
-		charge = None
-		bugs = None
-		poison = None
-		flags = None
+	def Get_Plant_Event(self, plant, x, y, age_before):
+		if plant.plant_type == Plant_Type.fireplant:
+			event_age = 20
+			if age_before < event_age and plant.age >= event_age:
+				self.score += 20#TODO fire blast
+				self.Up_Root(x, y + 1)
+				self.Up_Root(x, y - 1)
+				self.Up_Root(x + 1, y)
+				self.Up_Root(x - 1, y)
 
-	def Get_Plant_Conditions(plant_type):
-		plant_type = None
-		age = None
-		light = None
-		water = None
-		charge = None
-		bugs = None
-		poison = None
-		flags = None
+			event_age = 20
+			if plant.age >= event_age:
+				self.score += 2
 
-	def Get_Plant_Event(plant_type, age):
-		pass
+		event_age = 100#aplicable to all plants
+		if age_before < event_age and plant.age >= event_age:
+			self.Up_Root(x, y)
+
+	def Relay(self, effects, pos, passed = []):
+		for item in passed:
+			if item == pos:
+				return #Already checked this relay
+
+		if not len(passed) == 0:#So as not to applyu the same effect twice on the starting relay
+			Apply_Effects(effects, self.game_field[pos[0]][pos[1]]["plant"])
+			
+		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.hrelay:
+			passed.append(pos)
+			for i in range(pos[0], 0, -1):
+				self.Relay(effects, (i, pos[1]), passed)
+			for i in range(pos[0], self.field_size_x, +1):
+				self.Relay(effects, (i, pos[1]), passed)
+
+		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.drelay:
+			passed.append(pos)
+			i = pos[0] - 1
+			j = pos[1] - 1
+			while i >= 0 and j >= 0:
+				self.Relay(effects, (i, j), passed)
+				i += -1
+				j += -1
+
+			i = pos[0] - 1
+			j = pos[1] + 1
+			while i >= 0 and j < self.field_size_y:
+				self.Relay(effects, (i, j), passed)
+				i += -1
+				j +=  1 
+
+			i = pos[0] + 1
+			j = pos[1] + 1
+			while i < self.field_size_x and j < self.field_size_y:
+				self.Relay(effects, (i, j), passed)
+				i +=  1
+				j +=  1 
+
+			i = pos[0] + 1
+			j = pos[1] - 1
+			while i < self.field_size_x and j >= 0:
+				self.Relay(effects, (i, j), passed)
+				i +=  1
+				j += -1 
+
+		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.brelay:
+			passed.append(pos)	
+			for i in range(3):
+				for j in range(3):
+					x = pos[0] + i - 1
+					y = pos[1] + j - 1
+					self.Relay(effects, (x, y), passed)
 
 	def Set_New_Plant(self, plantToSet, plantType):
 		plantToSet.age = 0
+		plantToSet.temperature = 20
+		plantToSet.charge = 0
+		plantToSet.water = 30
+		plantToSet.light = 30
+		plantToSet.bugs = 0
+		plantToSet.poison = 0
 		plantToSet.plant_type = plantType
 		plantToSet.flags = {}
 		return plantToSet
 	
 	def End_Turn(self):
-		for row in self.game_field:
-			for plant in row:
-				plant["plant"].age += 10
+		for i in range(len(self.game_field)):
+			for j in range(len(self.game_field[i])):
+				plant = self.game_field[i][j]
+				
+				plant["plant"].temperature -= int((plant["plant"].temperature - self.outside_conditions["temperature"]) / random.randint(3, 5))
+				plant["plant"].charge -= int((plant["plant"].charge - self.outside_conditions["charge"]) / random.randint(3, 5))
+				plant["plant"].light -= int((plant["plant"].light - self.outside_conditions["light"]) / random.randint(3, 5))
+				plant["plant"].water -= int((plant["plant"].water - self.outside_conditions["water"]) / random.randint(3, 5))
+				plant["plant"].poison -= int((plant["plant"].poison - self.outside_conditions["poison"]) / random.randint(3, 5))
+				plant["plant"].bugs -= int((plant["plant"].bugs - self.outside_conditions["bugs"]) / random.randint(3, 5))
+				
+				plant["plant"].water += random.randint(-5, 5)
+				plant["plant"].light += random.randint(-5, 5)
+				plant["plant"].temperature += random.randint(-5, 5)
+
+				conditions = Get_Plant_Conditions(plant["plant"].plant_type)
+				growth = Calculate_Growth(plant["plant"], conditions)
+
+				age_before = plant["plant"].age #Used when calling effects
+				plant["plant"].age += growth
+
+				self.Get_Plant_Event(plant["plant"], i, j, age_before)
 		self.action_q.clear()
 
+		effects = Get_Plant_Effect(None)
 		for item in self.magic_circle:
-			pass
+			#apply effects to tile
+			Apply_Effects(effects, self.game_field[item[0]][item[1]]["plant"])
+
+			plant_t = self.game_field[item[0]][item[1]]["plant"].plant_type
+			if plant_t == Plant_Type.hrelay or plant_t == Plant_Type.brelay or plant_t == Plant_Type.drelay:
+				self.Relay(effects, item)
+				effects = Get_Plant_Effect(None)
+				additional_eff = effects
+			else:
+				additional_eff = Get_Plant_Effect(plant_t, self.game_field[item[0]][item[1]]["plant"].age)
+			
+			#add this tiles effects to the pile
+			effects["temperature"] += additional_eff["temperature"]
+			effects["light"] += additional_eff["light"]
+			effects["water"] += additional_eff["water"]
+			effects["charge"] += additional_eff["charge"]
+			effects["bugs"] += additional_eff["bugs"]
+			effects["poison"] += additional_eff["poison"]
+			effects["flags"] = { k: effects["flags"].get(k, 0) + additional_eff["flags"].get(k, 0) for k in set(effects["flags"]) | set(additional_eff["flags"]) }
 
 	def Plant(self, target_x, target_y, seed_type):
 		if not ((target_x < len(self.game_field) and target_x >= 0) and (target_y < len(self.game_field[target_x]) and target_y >= 0)):

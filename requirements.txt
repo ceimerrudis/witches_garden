@@ -1,4 +1,1 @@
-nose
-sphinx
 pygame
-pillow
