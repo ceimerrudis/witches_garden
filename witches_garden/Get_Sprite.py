@@ -1,5 +1,6 @@
 import pygame
-from Game_Data import Plant, Plant_Type
+from Game_Data import Plant
+from Plant_Info import Get_Plant_Stages, Plant_Type
 
 def Get_Sprite(sprite_name):
 	spritepath = "witches_garden/sprites/ui_elements/"
@@ -23,19 +24,13 @@ def Get_Sprite(sprite_name):
 		name = "undo_icon"
 	elif sprite_name == "start_btn":
 		name = "start_game_btn"
+	elif sprite_name == "back_btn":
+		name = "back_btn"
+	elif sprite_name == "menu_btn":
+		name = "menu_btn"
+	elif sprite_name == "gray":
+		name = "gray"
 	return pygame.image.load(spritepath + name + ".png")
-
-plant_stages = {#Must be ascending
-	"plot": [0],
-	"grass1": [0],
-	"grass2": [0],
-	"grass3": [0],
-	"grass4": [0],
-	"hrelay": [0, 10, 20],
-	"brelay": [0, 10, 20],
-	"drelay": [0, 10, 20],
-	"fireplant": [0, 10, 20],
-}
 
 #Gets plants sprite accoding to its state
 def Get_Seed_Sprite(plant):
@@ -52,6 +47,7 @@ def Get_Plant_Sprite(plant):
 	name = Plant_Type_To_Sprite_Name(plant.plant_type)
 
 	current = 0
+	plant_stages = Get_Plant_Stages()
 	for possible_age in plant_stages[name]:
 		if plant.age >= possible_age:
 			current = possible_age
@@ -60,8 +56,8 @@ def Get_Plant_Sprite(plant):
 	return pygame.image.load(spritepath + name + ".png")
 
 def Plant_Type_To_Sprite_Name(plant):
-	name = "grass1"
-	if plant == Plant_Type.plot:
+	name = plant.name
+	"""if plant == Plant_Type.plot:
 		name = "plot"
 	elif plant == Plant_Type.grass1:
 		name = "grass1"
@@ -75,17 +71,13 @@ def Plant_Type_To_Sprite_Name(plant):
 		name = "fireplant"
 	elif plant == Plant_Type.iceplant:
 		name = "iceplant"
-	elif plant == Plant_Type.seedplant:
-		name = "seedplant"
-	elif plant == Plant_Type.lightplant:
-		name = "lightplant"
-	elif plant == Plant_Type.darknessplant:
-		name = "darknessplant"
+	#elif plant == Plant_Type.seedplant:
+	#	name = "seedplant"
 	elif plant == Plant_Type.hrelay:
 		name = "hrelay"
 	elif plant == Plant_Type.drelay:
 		name = "drelay"
 	elif plant == Plant_Type.brelay:
 		name = "brelay"
-
+	"""
 	return name

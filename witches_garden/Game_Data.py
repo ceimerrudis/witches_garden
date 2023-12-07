@@ -1,5 +1,5 @@
 from Input_System import Input_System
-from Enums import Plant_Type
+from Plant_Info import *
 import random
 
 class Plant():
@@ -112,22 +112,6 @@ def Apply_Effects(effects, plant):
 		plant.bugs = 0
 	plant.flags = { k: plant.flags.get(k, 0) + effects["flags"].get(k, 0) for k in set(plant.flags) | set(effects["flags"]) }
 
-def Get_Plant_Effect(plant_type, age = 0):
-	if plant_type == Plant_Type.fireplant:
-		return { "temperature": 3 * (age // 5), "light": 2 * (age // 5), "water": -5, "charge": 10 * (age // 10), "bugs": -5, "poison": 0, "flags": {} }
-	return { "temperature": 0, "light": 0, "water": 0, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
-
-def Get_Plant_Conditions(plant_type):
-	if plant_type == Plant_Type.hrelay:
-		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
-	if plant_type == Plant_Type.brelay:
-		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
-	if plant_type == Plant_Type.drelay:
-		return { "temperature": 10, "light": 10, "water": 10, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
-	if plant_type == Plant_Type.fireplant:
-		return { "temperature": 10, "light": 10, "water": 30, "charge": 10, "bugs": 0, "poison": 5, "flags": {} }
-	return { "temperature": 0, "light": 0, "water": 0, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
-
 def Calculate_Growth(plant, conditions):
 	growth = 60
 	growth -= abs(plant.temperature - conditions["temperature"])
@@ -185,33 +169,23 @@ class Game_Data():
 			self.seeds = seed_dict
 		else:
 			self.seeds = {}
-			for i in range(5):
-				self.seeds[Plant_Type(i + 6)] = 6 + i
-
-	def Get_Plant_Event(self, plant, x, y, age_before):
-		if plant.plant_type == Plant_Type.fireplant:
-			event_age = 20
-			if age_before < event_age and plant.age >= event_age:
-				self.score += 20#TODO fire blast
-				self.Up_Root(x, y + 1)
-				self.Up_Root(x, y - 1)
-				self.Up_Root(x + 1, y)
-				self.Up_Root(x - 1, y)
-
-			event_age = 20
-			if plant.age >= event_age:
-				self.score += 2
-
-		event_age = 100#aplicable to all plants
-		if age_before < event_age and plant.age >= event_age:
-			self.Up_Root(x, y)
+			seed_types = list(Plant_Type)
+			for i in range(30):
+				seed_type = Plant_Type.plot
+				while seed_type == Plant_Type.plot or seed_type == Plant_Type.grass1 or seed_type == Plant_Type.grass2 or seed_type == Plant_Type.grass3 or seed_type == Plant_Type.grass4:
+					seed_type = random.choice(seed_types)
+				
+				if Plant_Type(seed_type) in self.seeds.keys():
+					self.seeds[Plant_Type(seed_type)] += 1
+				else:
+					self.seeds[Plant_Type(seed_type)] = 1
 
 	def Relay(self, effects, pos, passed = []):
 		for item in passed:
 			if item == pos:
 				return #Already checked this relay
 
-		if not len(passed) == 0:#So as not to applyu the same effect twice on the starting relay
+		if not len(passed) == 0:#So as not to apply the same effect twice on the starting relay
 			Apply_Effects(effects, self.game_field[pos[0]][pos[1]]["plant"])
 			
 		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.hrelay:
@@ -220,7 +194,7 @@ class Game_Data():
 				self.Relay(effects, (i, pos[1]), passed)
 			for i in range(pos[0], self.field_size_x, +1):
 				self.Relay(effects, (i, pos[1]), passed)
-
+		
 		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.drelay:
 			passed.append(pos)
 			i = pos[0] - 1
@@ -293,7 +267,7 @@ class Game_Data():
 				age_before = plant["plant"].age #Used when calling effects
 				plant["plant"].age += growth
 
-				self.Get_Plant_Event(plant["plant"], i, j, age_before)
+				Get_Plant_Event(self, plant["plant"], i, j, age_before)
 		self.action_q.clear()
 
 		effects = Get_Plant_Effect(None)
@@ -303,7 +277,7 @@ class Game_Data():
 
 			plant_t = self.game_field[item[0]][item[1]]["plant"].plant_type
 			if plant_t == Plant_Type.hrelay or plant_t == Plant_Type.brelay or plant_t == Plant_Type.drelay:
-				self.Relay(effects, item)
+				self.Relay(effects, item, [])
 				effects = Get_Plant_Effect(None)
 				additional_eff = effects
 			else:

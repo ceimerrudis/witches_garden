@@ -23,7 +23,8 @@ class UI_Renderer():
         self.ui_logic_ctrl = ui_logic_ctrl
 
     def render(self):
-        for screen in self.ui_logic_ctrl.active_screens:
+        for i in range(len(self.ui_logic_ctrl.active_screens)):
+            screen = self.ui_logic_ctrl.active_screens[i]
             for item in screen.ui_objects:
                 if item.image_type == 1:
                     Draw_Nine_Sliced_Image(item, self.surface)

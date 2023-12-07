@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "witches_garden", "witches_g
 		main.py = main.py
 		Nine_Slice.py = Nine_Slice.py
 		Object_Renderer.py = Object_Renderer.py
+		Plant_Info.py = Plant_Info.py
 		Screen.py = Screen.py
 		UI_Logic_Controler.py = UI_Logic_Controler.py
 		UI_Renderer.py = UI_Renderer.py

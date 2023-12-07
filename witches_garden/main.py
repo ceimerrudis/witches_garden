@@ -9,85 +9,126 @@ from Object_Renderer import Object_Renderer
 from Game_Data import Game_Data
 from UI_Logic_Controler import UI_Logic_Controler
 
-def Start_Game(parameters):
-    #create game
-    game_data.Initialize()
-    obj_renderer.Initialize()
-    ui_logic_ctrl.Initialize_Game_Screen(screen, game_data)
+class main():
+    TICKS_PER_SECOND = None
+    SKIP_TIME = None
+    MAX_FRAMESKIP = None
+    FPS_LIMIT = None
 
-TICKS_PER_SECOND = 30
-SKIP_TIME = 1000 / TICKS_PER_SECOND
-MAX_FRAMESKIP = 10
-FPS_LIMIT = 60
+    delta_time = None
 
-delta_time = 0
+    black = None
+    green = None
 
-black = (0, 0, 0)
-green = (0, 60, 0)
+    screen = None
 
-screen = Screen()
-screen.fill(black)
+    clock = None
+    next_game_tick = None
 
-clock = pygame.time.Clock()
-next_game_tick = pygame.time.get_ticks()
+    inputs = None
 
-inputs = Input_System()
+    game_data = None
+    obj_renderer = None
 
-game_data = Game_Data()
-obj_renderer = Object_Renderer(screen)
+    ui_logic_ctrl = None
+    ui_renderer = None
 
-ui_logic_ctrl = UI_Logic_Controler(game_data, screen, Start_Game)
-ui_renderer = UI_Renderer(screen, ui_logic_ctrl)
+    background_rect = None
 
-background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
+    running = None
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False    
-            break
-        elif event.type == pygame.VIDEORESIZE:
-            width, height = event.w, event.h
-            screen.resize(width, height)
+    def __init__(self):
+        self.TICKS_PER_SECOND = 30
+        self.SKIP_TIME = 1000 / self.TICKS_PER_SECOND
+        self.MAX_FRAMESKIP = 10
+        self.FPS_LIMIT = 60
+
+        self.delta_time = 0
+
+        self.black = (0, 0, 0)
+        self.green = (0, 60, 0)
+
+        self.screen = Screen()
+        self.screen.fill(self.black)
+
+        self.clock = pygame.time.Clock()
+        self.next_game_tick = pygame.time.get_ticks()
+
+        self.inputs = Input_System()
+
+        self.game_data = Game_Data()
+        self.obj_renderer = Object_Renderer(self.screen)
+
+        self.ui_logic_ctrl = UI_Logic_Controler(self.game_data, self.screen, self.Start_Game, self.Stop_Game)
+        self.ui_renderer = UI_Renderer(self.screen, self.ui_logic_ctrl)
+
+        self.background_rect = pygame.Rect(-1000, -1000, 2000, 2000)
+
+        self.running = True
+
+    def update(self):
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False    
+                    break
+                elif event.type == pygame.VIDEORESIZE:
+                    width, height = event.w, event.h
+                    self.screen.resize(width, height)
             
           
-    if not running:
-        break
-    screen.fill(black)
-    screen.draw(green, background_rect)
-    delta_time = clock.tick(FPS_LIMIT)
+            if not self.running:
+                break
+            self.screen.fill(self.black)
+            self.screen.draw(self.green, self.background_rect)
+            self.delta_time = self.clock.tick(self.FPS_LIMIT)
     
-    loops = 0;
-    while (pygame.time.get_ticks() > next_game_tick and loops < MAX_FRAMESKIP):
-        #get inputs
-        inputs.get_inputs(screen.Calc_Mouse_Viewport_Position)
+            self.loops = 0;
+            while (pygame.time.get_ticks() > self.next_game_tick and self.loops < self.MAX_FRAMESKIP):
+                #get inputs
+                self.inputs.get_inputs(self.screen.Calc_Mouse_Viewport_Position)
         
-        #process the inputs
-        ui_logic_ctrl.update(inputs)
-        if game_data.initialized == True:
-            game_data.update(inputs)
+                #process the inputs
+                self.ui_logic_ctrl.update(self.inputs)
+                if self.game_data.initialized == True:
+                    self.game_data.update(self.inputs)
         
-        next_game_tick += SKIP_TIME;
-        loops += 1
+                self.next_game_tick += self.SKIP_TIME;
+                self.loops += 1
 
-    #process inputs unrelated to game (fullsreen toggle and any others)
-    if(inputs.utility.fullscreen() == 2):
-        screen.toggle_fullscreen()
+            #process inputs unrelated to game (fullsreen toggle and any others)
+            if(self.inputs.utility.fullscreen() == 2):
+                self.screen.toggle_fullscreen()
 
-    if game_data.initialized == True:
-        screen.set_camera_pos(game_data.camera_pos)
-    else:
-        screen.set_camera_pos((0, 0))
+            if self.game_data.initialized == True:
+                self.screen.set_camera_pos(self.game_data.camera_pos)
+            else:
+                self.screen.set_camera_pos((0, 0))
     
-    #render the game
-    #render the game world
-    if obj_renderer.initialized == True:
-        obj_renderer.render(game_data, ui_logic_ctrl.scene)
+            #render the game
+            #render the game world
+            if self.obj_renderer.initialized == True:
+                self.obj_renderer.render(self.game_data, self.ui_logic_ctrl.scene)
     
-    #render all the elements in ui_logic_ctrl
-    ui_renderer.render()
+            #render all the elements in ui_logic_ctrl
+            self.ui_renderer.render()
      
-    pygame.display.update()
+            pygame.display.update()
 
-pygame.quit()
+        pygame.quit()
+
+    def Start_Game(self, parameters):
+        #create game
+        self.game_data.Initialize()
+        self.obj_renderer.Initialize()
+        self.ui_logic_ctrl.Initialize_Game_Screen(self.screen, self.game_data)
+
+    def Stop_Game(self):
+        self.game_data = Game_Data()
+        self.obj_renderer = Object_Renderer(self.screen)
+        self.ui_logic_ctrl = UI_Logic_Controler(self.game_data, self.screen, self.Start_Game, self.Stop_Game)
+        self.ui_renderer = UI_Renderer(self.screen, self.ui_logic_ctrl)
+
+
+main = main()
+main.update()

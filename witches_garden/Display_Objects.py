@@ -3,7 +3,8 @@ from pygame.locals import *
 from Get_Sprite import Get_Sprite, Get_Seed_Sprite, Get_Plant_Sprite
 from Nine_Slice import Nine_Slice_Rect, nine_slice
 from Game_Action_Wrapper import Game_Action_Wrapper
-from Enums import Event_Types, Plant_Type
+from Enums import Event_Types
+from Plant_Info import Plant_Type, Plant_Type_To_Display_Name
 
 class UI_Object():
     curently_draged = None
@@ -148,6 +149,26 @@ class Main_Menu_Screen(UI_Screen):
         start_game_function_parameters.append(self.level)
         self.start_game_function(start_game_function_parameters)
 
+class Pause_Screen(UI_Screen):
+    def __init__(self, screen_width, screen_height, Disable_Pause_Function, To_Main_Menu_Function):
+        super().__init__()
+
+        img = Get_Sprite("back_btn")
+        rect = pygame.Rect(screen_width / 2 - 30, screen_height / 2 - 22, 60, 20)
+        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        self.Add_Object(obj)
+        obj.Add_Event(Event_Types.on_click, Disable_Pause_Function, None)
+        
+        img = Get_Sprite("menu_btn")
+        rect = pygame.Rect(screen_width / 2 - 30, screen_height / 2 + 2, 60, 20)
+        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        self.Add_Object(obj)
+        obj.Add_Event(Event_Types.on_click, To_Main_Menu_Function, None)
+
+        img = Get_Sprite("gray")
+        rect = pygame.Rect(-100, -100, 400, 400)
+        self.Add_Object(UI_Object(img, 0, 0, 0, rect = rect))
+
 class Game_Screen(UI_Screen):
     seed_list = None
     seed_obj_list = None
@@ -230,7 +251,7 @@ class Game_Screen(UI_Screen):
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 5 - 32 -2, 16, 16)
         obj = UI_Object(img, 0, 1, 1, rect = child_rect)
         self.Add_Object(obj)
-        #obj.Add_Event(Event_Types.on_click, game_data.End_Turn, None)#TODO
+        obj.Add_Event(Event_Types.on_click, self.ui_logic_controler.Initialize_Pause_Screen, None)#TODO
 
         img = Get_Sprite("undo")
         child_rect = pygame.Rect(rect.x + 6 + 16 + 4, rect.y + rect.h - 5 - 32 - 2, 16, 16)
@@ -290,7 +311,7 @@ class Game_Screen(UI_Screen):
         info = "test"    
         for i in range(8):
             if i == 0:
-                info = "plant: " + plant.plant_type.name
+                info = "plant: " + Plant_Type_To_Display_Name(plant.plant_type)
             if i == 1:
                 info = "age: " + str(plant.age)
             if i == 2:
@@ -368,7 +389,7 @@ class Game_Screen(UI_Screen):
                     
                     self.seed_obj_list.append(seed_obj)
                     self.seed_obj_list.append(self.Create_Text_Object("seed_count", str(self.seed_list[i][1]), inner_rect.x + 20, inner_rect.y + 20))
-                    self.seed_obj_list.append(self.Create_Text_Object("info", str(Plant_Type(self.seed_list[i][0]).name), inner_rect.x + 6, inner_rect.y + 28))
+                    self.seed_obj_list.append(self.Create_Text_Object("info", str(Plant_Type_To_Display_Name(Plant_Type(self.seed_list[i][0]))), inner_rect.x + 6, inner_rect.y + 28))
                     self.Add_Object(seed_obj)
 
 class Game_Scene():

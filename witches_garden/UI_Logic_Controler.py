@@ -4,16 +4,16 @@ from Display_Objects import *
 class UI_Logic_Controler():
     game_data = None
     active_screens = None
-    start_game_function = None   
     scene = None
     game_action_wrapper = None
     surface = None
     input_sys = None
+    stop_game_function = None
     
-    def __init__(self, game_data, surface, start_game_function):
+    def __init__(self, game_data, surface, start_game_function, stop_game_function):
         self.game_action_wrapper = Game_Action_Wrapper(game_data)
         self.game_data = game_data
-        self.start_game_function = start_game_function
+        self.stop_game_function = stop_game_function
         self.surface = surface
         self.active_screens = [Main_Menu_Screen(surface.screen_width, surface.screen_height, start_game_function)]
 
@@ -21,10 +21,16 @@ class UI_Logic_Controler():
         self.scene = Game_Scene(game_data)
         self.active_screens = [Game_Screen(surface.screen_width, surface.screen_height, self.game_data, self)]
 
+    def Initialize_Pause_Screen(self):
+        self.active_screens.append(Pause_Screen(self.surface.screen_width, self.surface.screen_height, self.Disable_Pause, self.stop_game_function))
+
+    def Disable_Pause(self):
+        self.active_screens.pop(-1)
+
     def update(self, input_sys):
         #Update only the top most screen
         self.input_sys = input_sys
-        self.active_screens[0].update(input_sys)
+        self.active_screens[-1].update(input_sys)
         
     def Call_Plant(self, parameters):
         self.Process_Parameters(parameters)
