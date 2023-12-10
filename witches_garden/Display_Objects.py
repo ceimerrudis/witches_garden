@@ -3,37 +3,40 @@ from pygame.locals import *
 from Get_Sprite import Get_Sprite, Get_Seed_Sprite, Get_Plant_Sprite
 from Nine_Slice import Nine_Slice_Rect, nine_slice
 from Game_Action_Wrapper import Game_Action_Wrapper
-from Enums import Event_Types
+from Enums import Event_Types, Image_Type, UI_Object_Type
 from Plant_Info import Plant_Type, Plant_Type_To_Display_Name
 
 class UI_Object():
-    curently_draged = None
-    
-    events = None
+    #stores and proceses info about this object
+    drag_state = None #0 - not draged 1 - started draging 2 - being draged
+    #There is no state for release because all the logic for it happens n the update
 
-    image = None
-    rect = None
-    rects = None
-    sorting_layer = None
-    image_type = None
-    # 0 for normal image 
-    # 1 for nine sliced
-    object_type = None
-    # 0 for image
-    # 1 for button
-    # 2 for text
-    # 3 for text input    
+    events = None#Dictionary with functions and parameters to be executed at specific moments
 
-    def __init__(self, image, image_type, object_type, sorting_layer, rects=None, rect=None):
-        self.curently_draged = False
-        self.sorting_layer = 0
-        self.image_type = 0
-        self.object_type = 0
+    image = None #Holds the pygame surface object of the image to display
 
+    rect = None #The entire area of the screen in viewport coordinates
+
+    rects = None #A list with all the rects for a nine sliced image
+
+    sorting_order = None#All objects of a single screen are sorted acording to this value
+    #higher value means in front.
+
+    image_type = None #See Enums
+
+    object_type = None #See Enums
+
+    def __init__(self, image, image_type, object_type, sorting_order, rects=None, rect=None):
+        self.drag_state = 0
+        self.sorting_order = sorting_order 
+        self.image_type = image_type
+        self.object_type = object_type
+        self.image = image
+        
         self.events = {
-            Event_Types.on_click: [], "on_click_params": [],
-            Event_Types.on_begin_drag: [], "on_begin_drag_params": [],
-            Event_Types.on_end_drag: [], "on_end_drag_params": [],
+            Event_Types.on_click: [],
+            Event_Types.on_begin_drag: [],
+            Event_Types.on_end_drag: [],
         }
 
         if not rect is None:
@@ -48,60 +51,56 @@ class UI_Object():
                                          len(self.rects) - 1][0].h)
             self.rect = total_rect
         else:
+            print("Failed to create ui object")
             return 1
 
-        self.image = image
-        self.image_type = image_type
-        self.object_type = object_type
-        self.sorting_layer = sorting_layer
-
     def Hovering_Over(self, mouse_x, mouse_y):
+        # This funcion cares about the rect not the image 
+        # so an image of a circle still has a square "hitbox"
         if self.rect.x <= mouse_x and self.rect.x + self.rect.w >= mouse_x and self.rect.y <= mouse_y and self.rect.y + self.rect.h >= mouse_y:
             return True
         return False
 
     def update(self, input_sys):
-        if self.curently_draged == 1:
+        # Deal with drag state changes and drag events
+        if self.drag_state == 1:
             self.Execute_Events(Event_Types.on_begin_drag, input_sys)
-            self.curently_draged = 2
-        if self.curently_draged > 0:
+            self.drag_state = 2
+        if self.drag_state > 0:
             self.Update_Position(input_sys.mouse_x - int(self.rect.w / 2), input_sys.mouse_y - int(self.rect.h / 2))
             if input_sys.garden.action() == 1:
+                self.Execute_Events(Event_Types.on_end_drag, input_sys)
                 self.Stop_Draging(input_sys)
 
-        if input_sys.garden.action() == 2:
-            if self.object_type == 1:
+        # Deal with clicks
+        if self.object_type == UI_Object_Type.button:
+            if input_sys.garden.action() == 2:
                 if self.Hovering_Over(input_sys.mouse_x, input_sys.mouse_y):
                     self.Execute_Events(Event_Types.on_click, input_sys)
 
     def Start_Draging(self):
-        self.curently_draged = 1
+        self.drag_state = 1 #Seperate function so it can be called from an event
 
     def Stop_Draging(self, input_sys):
-        self.curently_draged = 0
-        self.Execute_Events(Event_Types.on_end_drag, input_sys)
+        self.drag_state = 0 #Seperate function so it can be called from an event
 
     def Add_Event(self, ev_type, ev, param):
-        self.events[ev_type].append(ev)
-        self.events[ev_type.name + "_params"].append(param)
+        #ev is a function
+        #param is a tuple with all necesary params
+        self.events[ev_type].append((ev, param))
     
-    def Execute_Events(self, event, input_sys):
-        for i in range(len(self.events[event])):
-            if self.events[event.name + "_params"][i] == None:
-                self.events[event][i]()
+    def Execute_Events(self, event_type, input_sys):
+        #Executes all events of event_type
+        for i in range(len(self.events[event_type])):
+            if self.events[event_type][i][1] == None:
+                #Functions that do not take parameters arent expecting a None param
+                # so it is ignored
+                self.events[event_type][i][0]()
             else:
-                self.events[event][i](self.events[event.name + "_params"][i])
+                self.events[event_type][i][0](self.events[event_type][i][1])
 
-    def Update_Position(self, x, y, change_pos=False):
-        if change_pos:
-            if not self.rects is None:
-                for rect in self.rects:
-                    self.rect.x += x
-                    self.rect.y += y
-            if not self.rect is None:
-                self.rect.x += x
-                self.rect.y += y
-        else:
+    def Update_Position(self, x, y, set_pos=False):
+        if set_pos:
             if not self.rects is None:
                 origin_x = self.rect.x
                 origin_y = self.rect.y
@@ -113,26 +112,39 @@ class UI_Object():
             if not self.rect is None:
                 self.rect.x = x
                 self.rect.y = y
+        else:
+            if not self.rects is None:
+                for rect in self.rects:
+                    self.rect.x += x
+                    self.rect.y += y
+            if not self.rect is None:
+                self.rect.x += x
+                self.rect.y += y
 
 class UI_Screen():
-    ui_objects = None
+    # Base class for the diferent ui screens that are in the game (main menu, game screen, pause screen, etc)
+    
+    ui_objects = None # List of ui objects sorted by the objects sorting order
+    #Must add objects through Add_Object function
 
     def __init__(self):
         self.ui_objects = []
     
     def Add_Object(self, obj_to_add):
         self.ui_objects.append(obj_to_add)
-        self.ui_objects = sorted(self.ui_objects, key=lambda obj: obj.sorting_layer)
+        self.ui_objects = sorted(self.ui_objects, key=lambda obj: obj.sorting_order)
 
     def update(self, input_sys):
+        #let each object update it self
         for ui_obj in self.ui_objects:
             ui_obj.update(input_sys)
 
 class Main_Menu_Screen(UI_Screen):
-    level = None
-    start_game_function = None
+    level = None # currently unused acts a example on how systems can be developed in the future
+    start_game_function = None # a function from Main class 
 
     def __init__(self, screen_width, screen_height, start_game_function):
+        # Screen size in needed so the button can be placed in the center
         super().__init__()
     
         self.level = 1
@@ -140,49 +152,49 @@ class Main_Menu_Screen(UI_Screen):
         
         img = Get_Sprite("start_btn")
         rect = pygame.Rect(int(screen_width / 2) - 30, int(screen_height / 2) - 10, 60, 20)
-        obj = UI_Object(img, 0, 1, 1, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = rect)
         obj.Add_Event(Event_Types.on_click, self.StartGame, None)
         self.Add_Object(obj)
 
     def StartGame(self):
         start_game_function_parameters = []
-        start_game_function_parameters.append(self.level)
+        start_game_function_parameters.append(self.level)# Unused
         self.start_game_function(start_game_function_parameters)
 
-class Pause_Screen(UI_Screen):
+class Pause_Screen(UI_Screen):    
     def __init__(self, screen_width, screen_height, Disable_Pause_Function, To_Main_Menu_Function):
         super().__init__()
 
         img = Get_Sprite("back_btn")
         rect = pygame.Rect(screen_width / 2 - 30, screen_height / 2 - 22, 60, 20)
-        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 2, rect = rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, Disable_Pause_Function, None)
         
         img = Get_Sprite("menu_btn")
         rect = pygame.Rect(screen_width / 2 - 30, screen_height / 2 + 2, 60, 20)
-        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 2, rect = rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, To_Main_Menu_Function, None)
 
         img = Get_Sprite("gray")
         rect = pygame.Rect(-100, -100, 400, 400)
-        self.Add_Object(UI_Object(img, 0, 0, 0, rect = rect))
+        self.Add_Object(UI_Object(img, Image_Type.basic, UI_Object_Type.image, 0, rect = rect))
 
 class Game_Screen(UI_Screen):
-    seed_list = None
-    seed_obj_list = None
+    seed_list = None # A copy of game data seed list if copies are not eaqul the list is remade
+    seed_obj_list = None # Contains (references to seed sprite objects, seed count obj, seed name obj)
     selected_seed_id = None
-    slots = None
-    game_data_seeds = None
+    slots = None #list of references to slots
+    game_data_seeds = None # The actual game data seed list
     ui_logic_controler = None
     uprooting = None
-    fonts = None
+    fonts = None #dictionary of fonts
 
-    text_pannel = None
-    text_pannel_text_objs = None
+    text_pannel = None # reference needed to place info text in the correct place
+    text_pannel_text_objs = None # List of info text object
     game_data = None
-    score_obj = None
+    score_obj = None # Text displaying score
 
     def __init__(self, screen_width, screen_height, game_data, logic_controler):
         super().__init__()
@@ -203,33 +215,31 @@ class Game_Screen(UI_Screen):
         self.fonts["info"] = pygame.font.SysFont(None, 30)
         self.fonts["score"] = pygame.font.SysFont(None, 40)
 
+        # Adding ui objects
+
         #slice_values
         l, t, r, b = 26, 26, 26, 26
-        #btm_pnl_sliced_images, center_width, center_height
         img, c_w, c_h = nine_slice(Get_Sprite("bottom"), l, t, r, b)
-        #btm_pnl_target_rect_on_viewport
         rect = pygame.Rect(0, screen_height - 64, screen_width, 64)
-        #btm_pnl_sliced_rect
         sliced_rect = Nine_Slice_Rect(rect, l, t, r, b, c_w, c_h)
-        
-        bottom_panel_object = UI_Object(img, 1, 0, 0, rects = sliced_rect)
+        bottom_panel_object = UI_Object(img, Image_Type.nine_sliced, UI_Object_Type.image, 0, rects = sliced_rect)
         self.Add_Object(bottom_panel_object)
 
         img = Get_Sprite("arrowLeft")
         rect = pygame.Rect(8, screen_height - 50, 18, 36)
-        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 2, rect = rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, self.Shift_Seeds_Left, None)
         
         img = Get_Sprite("arrowRight")
         rect = pygame.Rect(screen_width - 8 - 18, screen_height - 50, 18, 36)
-        obj = UI_Object(img, 0, 1, 2, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 2, rect = rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, self.Shift_Seeds_Right, None)
 
         img = Get_Sprite("top")
         rect = pygame.Rect(screen_width - 48, 0, 48, 128)
-        self.text_pannel = UI_Object(img, 0, 0, 0, rect = rect)
+        self.text_pannel = UI_Object(img, Image_Type.basic, UI_Object_Type.image, 0, rect = rect)
         self.Add_Object(self.text_pannel)
 
         self.score_obj = self.Create_Text_Object("score", "score: 0", self.text_pannel.rect.x + 4, self.text_pannel.rect.y + 73)
@@ -237,40 +247,42 @@ class Game_Screen(UI_Screen):
 
         img = Get_Sprite("hourglass")
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 4 - 16, 16, 16)
-        obj = UI_Object(img, 0, 1, 1, rect = child_rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = child_rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, game_data.End_Turn, None)
 
         img = Get_Sprite("shovel")
         child_rect = pygame.Rect(rect.x + 6 + 16 + 4, rect.y + rect.h - 4 - 16, 16, 16)
-        obj = UI_Object(img, 0, 1, 1, rect = child_rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = child_rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, self.Start_uprooting, None)
 
         img = Get_Sprite("pause")
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 5 - 32 -2, 16, 16)
-        obj = UI_Object(img, 0, 1, 1, rect = child_rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = child_rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, self.ui_logic_controler.Initialize_Pause_Screen, None)#TODO
 
         img = Get_Sprite("undo")
         child_rect = pygame.Rect(rect.x + 6 + 16 + 4, rect.y + rect.h - 5 - 32 - 2, 16, 16)
-        obj = UI_Object(img, 0, 1, 1, rect = child_rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = child_rect)
         self.Add_Object(obj)
         obj.Add_Event(Event_Types.on_click, self.ui_logic_controler.Call_Undo, None)
 
         for i in range(4):
             img = Get_Sprite("slot")
             rect = pygame.Rect(29 + (i * 42), screen_height - 52, 40, 40)
-            obj = UI_Object(img, 0, 0, 2, rect = rect)
+            obj = UI_Object(img, Image_Type.basic, UI_Object_Type.image, 2, rect = rect)
             self.Add_Object(obj)
             self.slots.append(obj)
 
         self.Update_Seed_List()
 
     def update(self, input_sys):
-        if self.uprooting:
+        if self.uprooting:# must be called before super update because buttons call start uproot and the uproot could end on the same frame
             if input_sys.garden.action() == 2:
+                self.End_uprooting()
+            if input_sys.garden.cancel() == 2:
                 self.End_uprooting()
 
         super().update(input_sys)
@@ -342,7 +354,7 @@ class Game_Screen(UI_Screen):
         rect = pygame.Rect(position_x, position_y, sz[0], sz[1])
                                                 #antialiass
         img = self.fonts[font_name].render(text, False, color)
-        obj = UI_Object(img, 0, 2, layer, rect = rect)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.text, layer, rect = rect)
         self.Add_Object(obj)
         return obj
 
@@ -357,31 +369,36 @@ class Game_Screen(UI_Screen):
         if not self.selected_seed_id == 0:
             self.selected_seed_id -= 1
             self.Update_Seed_List(True)
+            # Force update even if local seed list is same as game_data
 
     def Shift_Seeds_Right(self):
         if self.selected_seed_id + 1 < len(self.game_data_seeds):
             self.selected_seed_id += 1
             self.Update_Seed_List(True)
+            # Force update even if local seed list is same as game_data
 
     def Update_Seed_List(self, force_update = False):
         ls = []
-        for key in self.game_data_seeds.keys():
+        for key in self.game_data_seeds.keys():# Reform game data seed list
             ls.append((key.value, self.game_data_seeds[key]))
         ls = sorted(ls)
 
+        # Only update if lists aren't the same or if forced
         if ls == self.seed_list and not force_update:
             return
 
+        # destroy all seed objects
         self.seed_list = ls
         for seed in self.seed_obj_list:
             self.ui_objects.remove(seed)
         self.seed_obj_list.clear()
 
+        # create all objects
         if len(self.seed_list) > self.selected_seed_id:
             for i in range(self.selected_seed_id, self.selected_seed_id + 4):
                 if i + 1 <= len(self.seed_list):#this entry exists
                     inner_rect = pygame.Rect(self.slots[i - self.selected_seed_id].rect.x + 4, self.slots[i - self.selected_seed_id].rect.y + 4, 32, 32)
-                    seed_obj = UI_Object(Get_Seed_Sprite(Plant_Type(self.seed_list[i][0])), 0, 1, 3, rect = inner_rect)
+                    seed_obj = UI_Object(Get_Seed_Sprite(Plant_Type(self.seed_list[i][0])), Image_Type.basic, UI_Object_Type.button, 3, rect = inner_rect)
                     
                     seed_obj.Add_Event(Event_Types.on_click, seed_obj.Start_Draging, None)
                     seed_obj.Add_Event(Event_Types.on_end_drag, self.ui_logic_controler.Call_Plant, ["MOUSE_X", "MOUSE_Y", Plant_Type(self.seed_list[i][0])])
@@ -393,8 +410,9 @@ class Game_Screen(UI_Screen):
                     self.Add_Object(seed_obj)
 
 class Game_Scene():
-    background = None
-    plants = None
+    # Holds all data about the "game object" visuals
+    background = None # tilemap
+    plants = None # tilemap
 
     def __init__(self, game_data):
         self.background = Tilemap(game_data.field_size_x, game_data.field_size_y)
@@ -419,9 +437,9 @@ class Tilemap():
         self.pos_x = 0
         self.pos_y = 16
 
-        for i in range(self.map_height):  # Corrected range
+        for i in range(self.map_height):
             self.tiles.append([])
-            for j in range(self.map_width):  # Corrected range
+            for j in range(self.map_width):
                 xpos = j * self.tile_width
                 ypos = (self.map_height * self.tile_height) - ((self.map_width - i - 1) * self.tile_height)
                 tile = Tile_Obj(None, pygame.Rect(xpos, ypos, self.tile_width, self.tile_height))
@@ -446,5 +464,4 @@ class Tile_Obj():
         self.image = img
         self.rect = rect
         self.p_type = p_type
-        #print(self.p_type)
         self.age = age

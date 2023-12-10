@@ -13,6 +13,7 @@ class utility():#keyset
 class garden():#keyset
     input_system = None
     action_key = None
+    cancel_key = None
     plant_key = None
     root_key = None
     end_turn_key = None
@@ -31,6 +32,7 @@ class garden():#keyset
     def __init__(self, input_system):
         self.input_system = input_system
         self.action_key = "mouse_0"
+        self.cancel_key= "mouse_2"# right click
         self.plant_key = pygame.K_p
         self.root_key = pygame.K_r
         self.end_turn_key = pygame.K_e
@@ -48,6 +50,9 @@ class garden():#keyset
     
     def action(self):
         return self.input_system.keys[self.action_key]
+    
+    def cancel(self):
+        return self.input_system.keys[self.cancel_key]
 
     def plant(self):
         return self.input_system.keys[self.plant_key]
