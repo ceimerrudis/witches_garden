@@ -61,7 +61,6 @@ def Get_Plant_Effect(plant_type, age = 0):
 
 #5 Conditions that the plant grows best at
 def Get_Plant_Conditions(plant_type):
-	#Order does not matter
 	temp = 0
 	light = 0
 	water = 0
@@ -110,7 +109,9 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 	if plant.plant_type == Plant_Type.fireplant:
 		event_age = 20
 		if age_before < event_age and plant.age >= event_age:
-			game_data.score += 20#TODO fire blast
+			game_data.score += 20
+
+			#Fire blast destroys horizontaly and verticaly adjacent plants 
 			game_data.Up_Root(x, y + 1)
 			game_data.Up_Root(x, y - 1)
 			game_data.Up_Root(x + 1, y)
@@ -120,6 +121,7 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 		if plant.age >= event_age:
 			game_data.score += 2
 
-	event_age = 100#aplicable to all plants
+
+	event_age = 100#aplicable to all plants at age 100 die (get destroyed (be no longer (stop existing(...))))
 	if age_before < event_age and plant.age >= event_age:
 		game_data.Up_Root(x, y)

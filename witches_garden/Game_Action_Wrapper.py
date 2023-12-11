@@ -1,6 +1,8 @@
 from Game_Data import Game_Data
 
 class Game_Action_Wrapper():
+	# This class exists so the amount of references to game data would be limited 
+	# as well as spliting the parameter tuple
 	game_data = None
 
 	def __init__(self, game_data):

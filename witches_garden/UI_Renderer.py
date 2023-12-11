@@ -7,6 +7,7 @@ from Nine_Slice import Nine_Slice_Rect, nine_slice
 def Draw_Nine_Sliced_Image(imageObject, surface):
     i = 0
     j = 0
+    # nine sliced images are stored as a list of each of the slices
     for piece in imageObject.image:
         while j < len(imageObject.rects):
             if not imageObject.rects[j][1] == i:

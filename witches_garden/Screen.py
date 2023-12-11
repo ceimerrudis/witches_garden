@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 
 class Screen():
+    #
     screen_width = None
     screen_height = None
     old_window_size_x = None

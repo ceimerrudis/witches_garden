@@ -6,17 +6,14 @@ from Get_Sprite import Get_Plant_Sprite
 from Display_Objects import Tile_Obj
 
 class Object_Renderer():
+	# Renders scene objects stored by ui_logic controler to the given screen
 	surface = None
-	initialized = None
 
 	def __init__(self, screen):
 		self.surface = screen
-		self.initialized = False
-
-	def Initialize(self):
-		self.initialized = True
 
 	def render(self, game_data, scene):	
+		# Renders scene objects stored by ui_logic controler
 		if game_data.initialized == True:
 			j = 0
 			for x in game_data.game_field:

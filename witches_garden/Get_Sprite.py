@@ -3,6 +3,7 @@ from Game_Data import Plant
 from Plant_Info import Get_Plant_Stages, Plant_Type
 
 def Get_Sprite(sprite_name):
+	# Gets ui and other sprites
 	spritepath = "witches_garden/sprites/ui_elements/"
 	if sprite_name == "slot":
 		name = "seedSlot"
@@ -32,8 +33,8 @@ def Get_Sprite(sprite_name):
 		name = "gray"
 	return pygame.image.load(spritepath + name + ".png")
 
-#Gets plants sprite accoding to its state
 def Get_Seed_Sprite(plant):
+	#Gets seed sprite
 	spritepath = "witches_garden/sprites/seeds/"
 	name = Plant_Type_To_Sprite_Name(plant)
 	name += "_seed"
@@ -41,8 +42,8 @@ def Get_Seed_Sprite(plant):
 	return pygame.image.load(spritepath + name + ".png")
 
 
-#Gets plants sprite accoding to its state
 def Get_Plant_Sprite(plant):
+	#Gets tilemap sprites
 	spritepath = "witches_garden/sprites/plant_tilemap/"
 	name = Plant_Type_To_Sprite_Name(plant.plant_type)
 
@@ -57,27 +58,4 @@ def Get_Plant_Sprite(plant):
 
 def Plant_Type_To_Sprite_Name(plant):
 	name = plant.name
-	"""if plant == Plant_Type.plot:
-		name = "plot"
-	elif plant == Plant_Type.grass1:
-		name = "grass1"
-	elif plant == Plant_Type.grass2:
-		name = "grass2"
-	elif plant == Plant_Type.grass3:
-		name = "grass3"
-	elif plant == Plant_Type.grass4:
-		name = "grass4"
-	elif plant == Plant_Type.fireplant:
-		name = "fireplant"
-	elif plant == Plant_Type.iceplant:
-		name = "iceplant"
-	#elif plant == Plant_Type.seedplant:
-	#	name = "seedplant"
-	elif plant == Plant_Type.hrelay:
-		name = "hrelay"
-	elif plant == Plant_Type.drelay:
-		name = "drelay"
-	elif plant == Plant_Type.brelay:
-		name = "brelay"
-	"""
 	return name

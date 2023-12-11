@@ -1,4 +1,6 @@
 import pygame
+
+# Each class holds the different possible inputs for that purpose
 class utility():#keyset
     input_system = None
     fullscreen_key = None
@@ -125,8 +127,8 @@ class Input_System():
     
     mouse_pos_x = None#position in pixels relative to window (0, 0) == top left corner
     mouse_pos_y = None#position in pixels relative to window (0, 0) == top left corner
-    mouse_x = None#Mouse position in game window pixels
-    mouse_y = None#
+    mouse_x = None#Mouse position in game viewport pixels
+    mouse_y = None#Mouse position in game viewport pixels
 
     spectator_mode = None
     garden = None
@@ -177,6 +179,7 @@ class Input_System():
         self.mouse_y = 0
 
     def get_inputs(self, mouse_to_viewportmouse):
+        # pygme handles the mouse seperatley and so must I
         self.mouse_pos_x, self.mouse_pos_y = pygame.mouse.get_pos()
         self.mouse_x, self.mouse_y = mouse_to_viewportmouse(self.mouse_pos_x, self.mouse_pos_y)
         mouse_presses = pygame.mouse.get_pressed()
@@ -204,6 +207,8 @@ class Input_System():
             else:
                 self.keys[key] = 0
 
+
+        # This part deals with taking keyboard input
         pressed_keys = pygame.key.get_pressed()
         
         for key_id in self.keys.keys():

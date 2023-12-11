@@ -419,6 +419,7 @@ class Game_Scene():
         self.plants = Tilemap(game_data.field_size_x, game_data.field_size_y)
 
 class Tilemap():
+    #Holds info about tiles and performs calculations when needed
     tiles = None
     tile_width = None
     tile_height = None

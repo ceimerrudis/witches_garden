@@ -2,6 +2,8 @@ import pygame
 from Display_Objects import *
 
 class UI_Logic_Controler():
+    # Parent class that holds all data to do with user interface
+    # this includes game object sprite data
     game_data = None
     active_screens = None
     scene = None
@@ -15,10 +17,13 @@ class UI_Logic_Controler():
         self.game_data = game_data
         self.stop_game_function = stop_game_function
         self.surface = surface
+        # Begin the user interface on the main menu page
         self.active_screens = [Main_Menu_Screen(surface.screen_width, surface.screen_height, start_game_function)]
 
     def Initialize_Game_Screen(self, surface, game_data):
+        #Initialize the children which will each take care of their own data ()
         self.scene = Game_Scene(game_data)
+        # overriding list to make sure no layer is is stuck
         self.active_screens = [Game_Screen(surface.screen_width, surface.screen_height, self.game_data, self)]
 
     def Initialize_Pause_Screen(self):
@@ -44,6 +49,8 @@ class UI_Logic_Controler():
         self.game_action_wrapper.Undo()
 
     def Process_Parameters(self, parameters):
+        # Certain parameters are simply key strings instead of their actual values
+        # this function sets the parameters to the correct values
         for i in range(len(parameters)):
             if parameters[i] == "MOUSE_X":
                 x, y = self.surface.ScreenToWorldPos(self.input_sys.mouse_x, self.input_sys.mouse_y)
