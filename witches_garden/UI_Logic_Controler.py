@@ -53,8 +53,8 @@ class UI_Logic_Controler():
         # this function sets the parameters to the correct values
         for i in range(len(parameters)):
             if parameters[i] == "MOUSE_X":
-                x, y = self.surface.ScreenToWorldPos(self.input_sys.mouse_x, self.input_sys.mouse_y)
+                x, y = self.surface.ViewportToWorldPos(self.input_sys.mouse_x, self.input_sys.mouse_y)
                 parameters[i], dump = self.scene.plants.Get_Map_Pos_From_World_pos(x, y)
             if parameters[i] == "MOUSE_Y":
-                x, y = self.surface.ScreenToWorldPos(self.input_sys.mouse_x, self.input_sys.mouse_y)
+                x, y = self.surface.ViewportToWorldPos(self.input_sys.mouse_x, self.input_sys.mouse_y)
                 dump, parameters[i] = self.scene.plants.Get_Map_Pos_From_World_pos(x, y)

@@ -12,7 +12,7 @@ from UI_Logic_Controler import UI_Logic_Controler
 class main():
     # Main loop dressed up as a class 
     # so that functions can acces the data without the need to make global variables
-    
+
     TICKS_PER_SECOND = None # Number of "physics" updates  
     #the game tries to perform per second
     SKIP_TIME = None # miliseconds that each tick should take up

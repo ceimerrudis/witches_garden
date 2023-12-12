@@ -3,15 +3,16 @@ from Plant_Info import *
 import random
 
 class Plant():
-	plant_type = None
-	age = None
-	temperature = None
-	light = None
-	water = None
-	charge = None
-	bugs = None
-	poison = None
-	flags = None
+	# The main data class holds the info about a particular planted plant
+	plant_type = None # See enum in Plant_Info
+	age = None # integer from 0 - 100 (all plants die at age 100)
+	temperature = None # int
+	light = None # int
+	water = None # int
+	charge = None # int parameter like tempereture except mesures magic resedue
+	bugs = None # int
+	poison = None # int
+	flags = None # currenly unused but could be used to set on fire etc.
 
 	def __init__(self):
 		self.plant_type = Plant_Type.grass1
@@ -25,11 +26,13 @@ class Plant():
 		self.poison = 0
 
 	def __str__(self):
+		# for easy debuging
 		return "Plant " + str(self.plant_type) + " age " + str(self.age) + " flags " + str(self.flags) + "."
 
 def Get_Field(num):
+	# essentialy a level selector but has just 1 level
 	if num == 0:
-		return ([
+		return ([ # all plantable spots
 		(3, 8),
 		(4, 8),
 		(5, 8),
@@ -66,10 +69,10 @@ def Get_Field(num):
 			 
 		(3, 0),
 		(4, 0),
-		(5, 0)], 
+		(5, 0)], # end of plantable spots
 
 		[
-		(4, 0),
+		(4, 0), # all magic circle spots IN ORDER
 		(5, 0),
 		(7, 1),
 		(8, 3),
@@ -84,16 +87,19 @@ def Get_Field(num):
 		(0, 4),
 		(0, 3),
 		(1, 1),
-		(3, 0),
+		(3, 0),# end of magic circle
 		],
-		9, 9,
+		9, 9, # field size
+		
 		{ "temperature": 20, "light": 30, "water": 20, "charge": 0, "bugs": 0, "poison": 0, "flags": {} }
+		# conditions that the enviorment tries to enforce
 		)
 	else:
-		return []
+		return None
 
 def Apply_Effects(effects, plant):
-	#applies the effects of the circle to the designated tile
+	#applies the given effects to the designated tile
+	# the list must include all attributes
 	plant.temperature += effects["temperature"]
 	plant.light += effects["light"]
 	if plant.light < 0:
@@ -112,65 +118,68 @@ def Apply_Effects(effects, plant):
 		plant.bugs = 0
 	plant.flags = { k: plant.flags.get(k, 0) + effects["flags"].get(k, 0) for k in set(plant.flags) | set(effects["flags"]) }
 
-def Calculate_Growth(plant, conditions):
+def Calculate_Growth(plant, optimal_conditions):
+	# calculates growth according to the plants optimal_conditions 
 	growth = 60
-	growth -= abs(plant.temperature - conditions["temperature"])
-	growth -= abs(plant.light - conditions["light"])
-	growth -= abs(plant.water - conditions["water"])
-	growth -= abs(plant.charge - conditions["charge"])
-	growth -= abs(plant.poison - conditions["poison"])
-	growth -= abs(plant.bugs - conditions["bugs"])
-
-	#TODO make flags like on fire decrease growth
+	growth -= abs(plant.temperature - optimal_conditions["temperature"])
+	growth -= abs(plant.light - optimal_conditions["light"])
+	growth -= abs(plant.water - optimal_conditions["water"])
+	growth -= abs(plant.charge - optimal_conditions["charge"])
+	growth -= abs(plant.poison - optimal_conditions["poison"])
+	growth -= abs(plant.bugs - optimal_conditions["bugs"])
 
 	if growth < 0:
-		growth = 0
-	if growth > 20:
+		growth = 0 
+	if growth > 20:#limit growth 
 		growth = 20
 	return growth
 
 class Game_Data():
-	action_q = None
-	field_size_x = None
+	# This class holds and changes the game data
+	action_q = None # this turns actions stored so they can be undone
+	field_size_x = None # map size
 	field_size_y = None
-	game_field = None
-	seeds = None
-	camera_pos = None
-	initialized = None
-	magic_circle = None
-	score = None
-	outside_conditions = None
+	game_field = None # list of lists where each place is a 2 item dictionary
+	seeds = None # dictionary of players seeds and their amounts
+	camera_pos = None # used by main to update the actual camera
+	initialized = None # bool that makes sure no updates run on  half empty class
+	magic_circle = None # lsit of coordinates for the magic circle positions
+	score = None # player score
+	outside_conditions = None # the conditions the enviorment tries to enforce
 
 	def __init__(self):
 		self.action_q = []
-		self.field_size_x = 9
-		self.field_size_y = 9
 		self.camera_pos = [0, 16]
 		self.initialized = False
 		self.score = 0
 
-	def Initialize(self):
-		self.game_field = [[{"plant": Plant(), "growable": False } for i in range(self.field_size_y)] for j in range(self.field_size_x)]
-		field_obj = Get_Field(0)
+	def Initialize(self, lv = 0):
+		# loads the level and fills the empty data fields
+		field_obj = Get_Field(lv)
 		self.field_size_x = field_obj[2]
 		self.field_size_y = field_obj[3]
+		self.game_field = [[{"plant": Plant(), "growable": False } for i in range(self.field_size_y)] for j in range(self.field_size_x)]
 		field = field_obj[0]
 		self.magic_circle = field_obj[1]
 		self.outside_conditions = field_obj[4]
 		for item in field:
+			# create empty plots
 			self.Set_New_Plant(self.game_field[item[0]][item[1]]["plant"], Plant_Type.plot)
 			self.game_field[item[0]][item[1]]["growable"] = True
-
+	
+		# use random generation to create seeds
 		self.AddSeeds()
 		self.initialized = True
 
 	def AddSeeds(self, seed_dict = None):
+		# has 2 modes random gen and set mode when the list of seeds is known
 		if not seed_dict == None:
 			self.seeds = seed_dict
 		else:
 			self.seeds = {}
 			seed_types = list(Plant_Type)
 			for i in range(30):
+				# add 30 seeds each seed randomly picked from allowed ones
 				seed_type = Plant_Type.plot
 				while seed_type == Plant_Type.plot or seed_type == Plant_Type.grass1 or seed_type == Plant_Type.grass2 or seed_type == Plant_Type.grass3 or seed_type == Plant_Type.grass4:
 					seed_type = random.choice(seed_types)
@@ -181,6 +190,7 @@ class Game_Data():
 					self.seeds[Plant_Type(seed_type)] = 1
 
 	def Relay(self, effects, pos, passed = []):
+		# relay a magic circle effect through relay plants
 		for item in passed:
 			if item == pos:
 				return #Already checked this relay
@@ -188,6 +198,8 @@ class Game_Data():
 		if not len(passed) == 0:#So as not to apply the same effect twice on the starting relay
 			Apply_Effects(effects, self.game_field[pos[0]][pos[1]]["plant"])
 			
+		# different patterns for the three relay plants are described hear
+
 		if self.game_field[pos[0]][pos[1]]["plant"].plant_type == Plant_Type.hrelay:
 			passed.append(pos)
 			for i in range(pos[0], 0, -1):
@@ -234,6 +246,7 @@ class Game_Data():
 					self.Relay(effects, (x, y), passed)
 
 	def Set_New_Plant(self, plantToSet, plantType):
+		# sets the default stats for a new plant
 		plantToSet.age = 0
 		plantToSet.temperature = 20
 		plantToSet.charge = 0
@@ -246,6 +259,12 @@ class Game_Data():
 		return plantToSet
 	
 	def End_Turn(self):
+		# Does multiple things:
+			# 1 applies envo=iorments effects and mkes plants grow 
+			# 2 clears the undo queue
+			# 3 applies magic circle spells
+		
+		# 1
 		for i in range(len(self.game_field)):
 			for j in range(len(self.game_field[i])):
 				plant = self.game_field[i][j]
@@ -268,8 +287,11 @@ class Game_Data():
 				plant["plant"].age += growth
 
 				Get_Plant_Event(self, plant["plant"], i, j, age_before)
+		
+		# 2		
 		self.action_q.clear()
 
+		# 3
 		effects = Get_Plant_Effect(None)
 		for item in self.magic_circle:
 			#apply effects to tile
@@ -293,46 +315,55 @@ class Game_Data():
 			effects["flags"] = { k: effects["flags"].get(k, 0) + additional_eff["flags"].get(k, 0) for k in set(effects["flags"]) | set(additional_eff["flags"]) }
 
 	def Plant(self, target_x, target_y, seed_type):
+		# Plants the given seed(plant)_type in the given spot
+		
 		if not ((target_x < len(self.game_field) and target_x >= 0) and (target_y < len(self.game_field[target_x]) and target_y >= 0)):
-			return
+			return # out of bounds
+		
 		if self.game_field[target_x][target_y]["growable"] == False:
-			print("ilegal action")
-			return
-		if not self.game_field[target_x][target_y]["plant"].plant_type == Plant_Type.plot:
-			print("cant plant on top of other plants")
-			return
-		if not seed_type in self.seeds.keys():
-			print("seed not found")
-			return 
-		if self.seeds[seed_type] <= 0:
-			print("out of seeds")
-			return
+			return # planting on an unplantable location
 
+		if not self.game_field[target_x][target_y]["plant"].plant_type == Plant_Type.plot:
+			return # trying to plant on top of other plants
+		
+		if not seed_type in self.seeds.keys():
+			return # seed not found
+		
+		if self.seeds[seed_type] <= 0:
+			return # out of seeds
+
+		#add to undo q
 		self.action_q.append(("planted", target_x, target_y, self.game_field[target_x][target_y]["plant"], seed_type, -1))
+		
+		# override previous plant
 		plant = self.Set_New_Plant(Plant(), seed_type)
 		self.Change_Seed_Amount(seed_type, -1)
 		self.game_field[target_x][target_y]["plant"] = plant	
 
 	def Up_Root(self, target_x, target_y):
+		# Destroys the plant at specified location
 		if not ((target_x < len(self.game_field) and target_x >= 0) and (target_y < len(self.game_field[target_x]) and target_y >= 0)):
-			return	
+			return # out of bounds
 
 		if self.game_field[target_x][target_y]["growable"] == False:
-			return
+			return # cant uproot grass
+
 		plant = self.Set_New_Plant(Plant(), Plant_Type.plot)
+		# add to undo q
 		self.action_q.append(("removed", target_x, target_y, self.game_field[target_x][target_y]["plant"]))
 		self.game_field[target_x][target_y]["plant"] = plant
 
 	def Undo(self):
+		# goes back one step in the q
 		if len(self.action_q) <= 0:
-			print("nothing in the q")
-			return
+			return # q is empty
 		if self.action_q[-1][0] == "removed":
 			pos_x = self.action_q[-1][1]
 			pos_y = self.action_q[-1][2]
 			old_plant = self.action_q[-1][3]	
 		
 			self.game_field[pos_x][pos_y]["plant"] = old_plant
+		
 		elif self.action_q[-1][0] == "planted":
 			seed_type = self.action_q[-1][4]
 			seed_amount = self.action_q[-1][5]
@@ -342,8 +373,10 @@ class Game_Data():
 
 			self.Change_Seed_Amount(seed_type, -seed_amount)
 			self.game_field[pos_x][pos_y]["plant"] = old_plant
+		
 		else:
 			print("Action not recognized")
+			
 		self.action_q.pop()
 
 	def Change_Seed_Amount(self, seed_type, amount):
@@ -356,6 +389,8 @@ class Game_Data():
 			return self.game_field[x][y]["plant"]
 
 	def update(self, inputs):
+		pass
+		# I used to want hotkeys but now the game is mouyse only so the update is empty
 		"""camera_pos_change = [0, 0]
 		if(inputs.spectator_mode.w() >= 2):
 			camera_pos_change[1] += -2

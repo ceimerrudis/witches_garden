@@ -67,7 +67,8 @@ class UI_Object():
             self.Execute_Events(Event_Types.on_begin_drag, input_sys)
             self.drag_state = 2
         if self.drag_state > 0:
-            self.Update_Position(input_sys.mouse_x - int(self.rect.w / 2), input_sys.mouse_y - int(self.rect.h / 2))
+            # the int(rect...) is an offset so the seed is centered on cursor
+            self.Update_Position(input_sys.mouse_x - int(self.rect.w / 2), input_sys.mouse_y - int(self.rect.h / 2), True)
             if input_sys.garden.action() == 1:
                 self.Execute_Events(Event_Types.on_end_drag, input_sys)
                 self.Stop_Draging(input_sys)
@@ -289,7 +290,7 @@ class Game_Screen(UI_Screen):
 
         #displaying info about the plant under cursor
         plant_map = self.ui_logic_controler.scene.plants 
-        x, y = self.ui_logic_controler.surface.ScreenToWorldPos(input_sys.mouse_x, input_sys.mouse_y)
+        x, y = self.ui_logic_controler.surface.ViewportToWorldPos(input_sys.mouse_x, input_sys.mouse_y)
         x, y = plant_map.Get_Map_Pos_From_World_pos(x, y)
         plant = self.game_data.Get_Plant(x, y)
         self.Display_Plant_Info(plant)
