@@ -4,7 +4,7 @@ from Get_Sprite import Get_Sprite, Get_Seed_Sprite, Get_Plant_Sprite
 from Nine_Slice import Nine_Slice_Rect, nine_slice
 from Game_Action_Wrapper import Game_Action_Wrapper
 from Enums import Event_Types, Image_Type, UI_Object_Type
-from Plant_Info import Plant_Type, Plant_Type_To_Display_Name
+from Plant_Info import Plant_Type, Plant_Type_To_Display_Name, Get_Plant_Conditions, Get_Plant_Effect
 
 class UI_Object():
     #stores and proceses info about this object
@@ -184,7 +184,9 @@ class Pause_Screen(UI_Screen):
 
 class Game_Screen(UI_Screen):
     seed_list = None # A copy of game data seed list if copies are not eaqul the list is remade
-    seed_obj_list = None # Contains (references to seed sprite objects, seed count obj, seed name obj)
+    seed_obj_list = None # Contains tuples that hold references to 
+    #               (seed sprite objects, seed count obj, seed name obj, plant_type)
+    
     selected_seed_id = None
     slots = None #list of references to slots
     game_data_seeds = None # The actual game data seed list
@@ -214,7 +216,7 @@ class Game_Screen(UI_Screen):
         self.fonts["default"] = pygame.font.SysFont(None, 24)
         self.fonts["seed_count"] = pygame.font.SysFont(None, 40)
         self.fonts["info"] = pygame.font.SysFont(None, 30)
-        self.fonts["score"] = pygame.font.SysFont(None, 40)
+        self.fonts["score"] = pygame.font.SysFont(None, 36)
 
         # Adding ui objects
 
@@ -243,8 +245,9 @@ class Game_Screen(UI_Screen):
         self.text_pannel = UI_Object(img, Image_Type.basic, UI_Object_Type.image, 0, rect = rect)
         self.Add_Object(self.text_pannel)
 
-        self.score_obj = self.Create_Text_Object("score", "score: 0", self.text_pannel.rect.x + 4, self.text_pannel.rect.y + 73)
+        self.score_obj = self.Create_Text_Object("score", "score: 0 / 1", self.text_pannel.rect.x + 4, self.text_pannel.rect.y + 73)
         self.score_obj.score = 0
+        self.score_obj.turn = 0
 
         img = Get_Sprite("hourglass")
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 4 - 16, 16, 16)
@@ -292,13 +295,26 @@ class Game_Screen(UI_Screen):
         plant_map = self.ui_logic_controler.scene.plants 
         x, y = self.ui_logic_controler.surface.ViewportToWorldPos(input_sys.mouse_x, input_sys.mouse_y)
         x, y = plant_map.Get_Map_Pos_From_World_pos(x, y)
+        
+        # BUG seed info dissapears when holding seed over grass (or field in general)
         plant = self.game_data.Get_Plant(x, y)
-        self.Display_Plant_Info(plant)
+        if plant == None:
+            plant_found = False
+            for item in self.seed_obj_list:
+                if item[0].Hovering_Over(input_sys.mouse_x, input_sys.mouse_y):
+                    plant_found = True
+                    self.Display_Seed_Info(item[3])
+            if not plant_found: 
+                self.Display_Plant_Info(None)
+        else:
+            self.Display_Plant_Info(plant)
+                    
 
         #displaying the correct score
-        if not self.score_obj.score == self.game_data.score:
+        if not (self.score_obj.score == self.game_data.score and self.score_obj.turn == self.game_data.turn):
             self.score_obj.score = self.game_data.score
-            score_txt = "score: " + str(self.score_obj.score)
+            self.score_obj.turn = self.game_data.turn
+            score_txt = "score: " + str(self.score_obj.score) + " / " + str(self.score_obj.turn + 1)
             sz = self.fonts["score"].size(score_txt)
             self.score_obj.rect.w = sz[0]
             self.score_obj.rect.h = sz[1]
@@ -330,7 +346,7 @@ class Game_Screen(UI_Screen):
             if i == 2:
                 info = "light: " + str(plant.light)
             if i == 3:
-                info = "temperature: " + str(plant.temperature)
+                info = "heat: " + str(plant.temperature)
             if i == 4:
                 info = "water: " + str(plant.water)
             if i == 5:
@@ -346,6 +362,42 @@ class Game_Screen(UI_Screen):
             obj = self.Create_Text_Object("info", info, x, y)
             self.text_pannel_text_objs.append(obj)
 
+    def Display_Seed_Info(self, plant_type):
+        if self.text_pannel == None:
+            print("error")
+            return
+        if self.text_pannel_text_objs == None:
+            self.text_pannel_text_objs = []
+        else:
+            for item in self.text_pannel_text_objs:
+                self.ui_objects.remove(item)
+            self.text_pannel_text_objs.clear()
+        if plant_type == Plant_Type.plot or plant_type == Plant_Type.grass1 or plant_type == Plant_Type.grass2 or plant_type == Plant_Type.grass3 or plant_type == Plant_Type.grass4:
+            return
+        info = "test"    
+
+        conditions = Get_Plant_Conditions(plant_type)
+        effects = Get_Plant_Effect(plant_type, 20)# 20 is the assumed age
+
+        for i in range(6):
+            if i == 0:
+                info = "plant: " + Plant_Type_To_Display_Name(plant_type)
+            if i == 1:
+                info = "light: " + str(conditions["light"]) + " / " + str(effects["light"])
+            if i == 2:
+                info = "heat: " + str(conditions["temperature"]) + " / " + str(effects["temperature"])
+            if i == 3:
+                info = "water: " + str(conditions["water"]) + " / " + str(effects["water"])
+            if i == 4:
+                info = "charge: " + str(conditions["charge"]) + " / " + str(effects["charge"])
+            if i == 5:
+                info = "bugs: " + str(conditions["bugs"]) + " / " + str(effects["bugs"])
+            if i == 6:
+                info = "poison: " + str(conditions["poison"]) + " / " + str(effects["poison"])
+            
+            x, y = self.text_pannel.rect.x + 3, self.text_pannel.rect.y + 5 + (8 * i)
+            obj = self.Create_Text_Object("info", info, x, y)
+            self.text_pannel_text_objs.append(obj)
 
     def Create_Text_Object(self, font_name, text, position_x = 0, position_y = 0, color = (255, 255, 255), layer = 5):
         if not font_name in self.fonts.keys():
@@ -391,7 +443,9 @@ class Game_Screen(UI_Screen):
         # destroy all seed objects
         self.seed_list = ls
         for seed in self.seed_obj_list:
-            self.ui_objects.remove(seed)
+            self.ui_objects.remove(seed[0])
+            self.ui_objects.remove(seed[1])
+            self.ui_objects.remove(seed[2])
         self.seed_obj_list.clear()
 
         # create all objects
@@ -405,9 +459,10 @@ class Game_Screen(UI_Screen):
                     seed_obj.Add_Event(Event_Types.on_end_drag, self.ui_logic_controler.Call_Plant, ["MOUSE_X", "MOUSE_Y", Plant_Type(self.seed_list[i][0])])
                     seed_obj.Add_Event(Event_Types.on_end_drag, self.Update_Seed_List, True)
                     
-                    self.seed_obj_list.append(seed_obj)
-                    self.seed_obj_list.append(self.Create_Text_Object("seed_count", str(self.seed_list[i][1]), inner_rect.x + 20, inner_rect.y + 20))
-                    self.seed_obj_list.append(self.Create_Text_Object("info", str(Plant_Type_To_Display_Name(Plant_Type(self.seed_list[i][0]))), inner_rect.x + 6, inner_rect.y + 28))
+                    count = (self.Create_Text_Object("seed_count", str(self.seed_list[i][1]), inner_rect.x + 20, inner_rect.y + 20))
+                    name = (self.Create_Text_Object("info", Plant_Type_To_Display_Name(Plant_Type(self.seed_list[i][0])), inner_rect.x, inner_rect.y + 28))
+                    
+                    self.seed_obj_list.append((seed_obj, name, count, Plant_Type(self.seed_list[i][0])))                   
                     self.Add_Object(seed_obj)
 
 class Game_Scene():

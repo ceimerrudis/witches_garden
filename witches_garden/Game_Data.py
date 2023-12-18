@@ -126,10 +126,17 @@ def Calculate_Growth(plant, optimal_conditions):
 	growth -= abs(plant.water - optimal_conditions["water"])
 	growth -= abs(plant.charge - optimal_conditions["charge"])
 	growth -= abs(plant.poison - optimal_conditions["poison"])
-	growth -= abs(plant.bugs - optimal_conditions["bugs"])
+	bugs = optimal_conditions["bugs"] + plant.bugs
+	if bugs < 0:
+		bugs = 0
+	growth -= bugs
 
 	if growth < 0:
-		growth = 0 
+		r = random.randint(0, 2)
+		if r == 2:
+			growth = random.randint(1, 3)
+		else:
+			growth = 0 
 	if growth > 20:#limit growth 
 		growth = 20
 	return growth
@@ -146,15 +153,20 @@ class Game_Data():
 	magic_circle = None # lsit of coordinates for the magic circle positions
 	score = None # player score
 	outside_conditions = None # the conditions the enviorment tries to enforce
+	turn = None # Turn # of game
 
-	def __init__(self):
+	main = None # Reference to main used to stop the game
+	
+	def __init__(self, main):
 		self.action_q = []
 		self.camera_pos = [0, 16]
 		self.initialized = False
 		self.score = 0
+		self.main = main
 
 	def Initialize(self, lv = 0):
 		# loads the level and fills the empty data fields
+		self.turn = 0
 		field_obj = Get_Field(lv)
 		self.field_size_x = field_obj[2]
 		self.field_size_y = field_obj[3]
@@ -195,6 +207,9 @@ class Game_Data():
 			if item == pos:
 				return #Already checked this relay
 
+		if not ((pos[0] >= 0 and pos[0] < self.field_size_x) and (pos[1] >= 0 and pos[1] < self.field_size_y)):
+			return #Outside bounds of field
+		
 		if not len(passed) == 0:#So as not to apply the same effect twice on the starting relay
 			Apply_Effects(effects, self.game_field[pos[0]][pos[1]]["plant"])
 			
@@ -263,8 +278,10 @@ class Game_Data():
 			# 1 applies envo=iorments effects and mkes plants grow 
 			# 2 clears the undo queue
 			# 3 applies magic circle spells
-		
+			# 4 stop the game if turn hits 29
 		# 1
+		self.turn += 1
+
 		for i in range(len(self.game_field)):
 			for j in range(len(self.game_field[i])):
 				plant = self.game_field[i][j]
@@ -313,6 +330,10 @@ class Game_Data():
 			effects["bugs"] += additional_eff["bugs"]
 			effects["poison"] += additional_eff["poison"]
 			effects["flags"] = { k: effects["flags"].get(k, 0) + additional_eff["flags"].get(k, 0) for k in set(effects["flags"]) | set(additional_eff["flags"]) }
+
+		if self.turn == 29:
+			print ("Game finnished! Your score is " + str(self.score) + "!")
+			self.main.Stop_Game()
 
 	def Plant(self, target_x, target_y, seed_type):
 		# Plants the given seed(plant)_type in the given spot
@@ -380,9 +401,13 @@ class Game_Data():
 		self.action_q.pop()
 
 	def Change_Seed_Amount(self, seed_type, amount):
-		self.seeds[seed_type] += amount
-		if self.seeds[seed_type] <= 0:
-			self.seeds.pop(seed_type)
+		if seed_type in self.seeds.keys():
+			self.seeds[seed_type] += amount
+		else:
+			if amount <= 0:
+				return
+			else:
+				self.seeds[seed_type] = amount
 
 	def Get_Plant(self, x, y):
 		if x < self.field_size_x and x >= 0 and y < self.field_size_y and y >= 0:

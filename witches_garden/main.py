@@ -75,7 +75,7 @@ class main():
 
         self.inputs = Input_System()
 
-        self.game_data = Game_Data()
+        self.game_data = Game_Data(self)
         self.obj_renderer = Object_Renderer(self.screen)
 
         self.ui_logic_ctrl = UI_Logic_Controler(self.game_data, self.screen, self.Start_Game, self.Stop_Game)
@@ -146,7 +146,7 @@ class main():
         self.ui_logic_ctrl.Initialize_Game_Screen(self.screen, self.game_data)
 
     def Stop_Game(self):
-        self.game_data = Game_Data()
+        self.game_data = Game_Data(self)
         self.obj_renderer = Object_Renderer(self.screen)
         self.ui_logic_ctrl = UI_Logic_Controler(self.game_data, self.screen, self.Start_Game, self.Stop_Game)
         self.ui_renderer = UI_Renderer(self.screen, self.ui_logic_ctrl)

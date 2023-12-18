@@ -41,7 +41,6 @@ def Get_Seed_Sprite(plant):
 
 	return pygame.image.load(spritepath + name + ".png")
 
-
 def Get_Plant_Sprite(plant):
 	#Gets tilemap sprites
 	spritepath = "witches_garden/sprites/plant_tilemap/"

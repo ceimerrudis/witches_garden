@@ -9,4 +9,4 @@ The magic circle activates at the end of your turn absorbing the effects of plan
 
 In the game you drag and drop seeds, uproot plants by clicking the shovel then clicking a plant, and undo any actions done this turn by clciking the blue arrow.
 To end turn click the hourglass button.
-Thai aim of the game is to get the highest possible score.
+Thai aim of the game is to get the highest possible score in 30 turns.
