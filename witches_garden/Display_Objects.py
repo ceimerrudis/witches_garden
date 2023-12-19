@@ -378,21 +378,23 @@ class Game_Screen(UI_Screen):
 
         conditions = Get_Plant_Conditions(plant_type)
         effects = Get_Plant_Effect(plant_type, 20)# 20 is the assumed age
-
-        for i in range(6):
+        j = 0
+        for i in range(8):
             if i == 0:
                 info = "plant: " + Plant_Type_To_Display_Name(plant_type)
             if i == 1:
-                info = "light: " + str(conditions["light"]) + " / " + str(effects["light"])
+                info = "cond / effects"
             if i == 2:
-                info = "heat: " + str(conditions["temperature"]) + " / " + str(effects["temperature"])
+                info = "light: " + str(conditions["light"]) + " / " + str(effects["light"])
             if i == 3:
-                info = "water: " + str(conditions["water"]) + " / " + str(effects["water"])
+                info = "heat: " + str(conditions["temperature"]) + " / " + str(effects["temperature"])
             if i == 4:
-                info = "charge: " + str(conditions["charge"]) + " / " + str(effects["charge"])
+                info = "water: " + str(conditions["water"]) + " / " + str(effects["water"])
             if i == 5:
-                info = "bugs: " + str(conditions["bugs"]) + " / " + str(effects["bugs"])
+                info = "charge: " + str(conditions["charge"]) + " / " + str(effects["charge"])
             if i == 6:
+                info = "bugs: " + str(conditions["bugs"]) + " / " + str(effects["bugs"])
+            if i == 7:
                 info = "poison: " + str(conditions["poison"]) + " / " + str(effects["poison"])
             
             x, y = self.text_pannel.rect.x + 3, self.text_pannel.rect.y + 5 + (8 * i)
@@ -405,6 +407,7 @@ class Game_Screen(UI_Screen):
 
         sz = self.fonts[font_name].size(text)
         rect = pygame.Rect(position_x, position_y, sz[0], sz[1])
+
                                                 #antialiass
         img = self.fonts[font_name].render(text, False, color)
         obj = UI_Object(img, Image_Type.basic, UI_Object_Type.text, layer, rect = rect)

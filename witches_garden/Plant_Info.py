@@ -101,10 +101,10 @@ def Get_Plant_Effect(plant_type, age = 0):
 		flags = {}
 	if plant_type == Plant_Type.siphonrose:
 		temp =  5 + 2 * (age // 6)
-		light = 0
-		water = 0
+		light = -5
+		water = -5
 		charge = -5 + -2 * (age // 3)
-		bugs = 0
+		bugs = -5
 		poison = 3 + 2 * (age // 6)
 		flags = {}
 
@@ -235,25 +235,39 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 	if plant.plant_type == Plant_Type.demonfern:
 		event_age = 40
 		if age_before < event_age and plant.age >= event_age:
-			game_data.score += -10
-
-			#Poison sets over field
-			#set flag as sprayed
-			#TODO
+			if not "sprayed_poison" in plant.flags.keys():
+				game_data.score += -10
+				#Poison sets over field
+				for i in range(game_data.field_size_x):
+					for j in range(game_data.field_size_y):
+						game_data.Get_Plant(i, j).poison += 10
+				plant.flags["sprayed_poison"] = True
 
 	if plant.plant_type == Plant_Type.evergreencabbage:
 		event_age = 85
 		if age_before < event_age and plant.age >= event_age:
 			game_data.score += 150
 
-			#Attract bugs
-			#TODO
+			#Attract bugs in a taxicab distance of 2 with power = distance * 10
+			power = 10
+			distance = 2
+			val = power * distance
+			game_data.Get_Plant(x, y + 2).bugs += val
+			game_data.Get_Plant(x, y - 2).bugs += val
+			game_data.Get_Plant(x + 2, y).bugs += val
+			game_data.Get_Plant(x - 2, y).bugs += val
+			game_data.Get_Plant(x + 1, y + 1).bugs += val
+			game_data.Get_Plant(x + 1, y - 1).bugs += val
+			game_data.Get_Plant(x - 1, y + 1).bugs += val
+			game_data.Get_Plant(x - 1, y - 1).bugs += val
 
-		event_age = 50
-		if age_before < event_age and plant.age >= event_age:
-			pass
-			#Attract bugs
-			#TODO
+			distance = 1
+			val = power * distance
+
+			game_data.Get_Plant(x, y + 1).bugs += val
+			game_data.Get_Plant(x, y - 1).bugs += val
+			game_data.Get_Plant(x + 1, y).bugs += val
+			game_data.Get_Plant(x - 1, y).bugs += val
 
 	if plant.plant_type == Plant_Type.siphonrose:
 		event_age = 50
