@@ -196,9 +196,12 @@ def Get_Plant_Conditions(plant_type):
 	return { "temperature": temp, "light": light, "water": water, "charge": charge, "bugs": bugs, "poison": poison, "flags": flags }
 
 #6 Events that happen when the plant is growing
-def Get_Plant_Event(game_data, plant, x, y, age_before):
+def Execute_Plant_Event(game_data, plant, x, y, age_before):
+	if plant.plant_type == Plant_Type.plot or plant.plant_type == Plant_Type.grass1 or plant.plant_type == Plant_Type.grass2 or plant.plant_type == Plant_Type.grass3 or plant.plant_type == Plant_Type.grass4:
+		return
 	event_age = 100#aplicable to all plants at age 100 die (get destroyed (be no longer (stop existing(...))))
 	if age_before < event_age and plant.age >= event_age:
+		game_data.effect_texts.append("withering of old age")
 		game_data.Up_Root(x, y)
 		return
 
@@ -208,6 +211,7 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 			game_data.score += 20
 
 			#Fire blast destroys horizontaly and verticaly adjacent plants 
+			game_data.effect_texts.append("fire blast")
 			game_data.Up_Root(x, y + 1)
 			game_data.Up_Root(x, y - 1)
 			game_data.Up_Root(x + 1, y)
@@ -215,6 +219,7 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 
 		event_age = 20
 		if plant.age >= event_age:
+			game_data.effect_texts.append("fire oil collection")
 			game_data.score += 2
 
 	if plant.plant_type == Plant_Type.azurevine:
@@ -223,12 +228,17 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 			game_data.score += 30
 
 			#Affect the whole field with light rain and charge
-			#TODO
+			game_data.effect_texts.append("refreshing rain")
+			for target_plant in game_data.field:
+				target_plant.water += plant.age
+				target_plant.charge += 7 + (plant.age / 10)
+		
 
 	if plant.plant_type == Plant_Type.aquagrape:
 		event_age = 30
 		if age_before < event_age and plant.age >= event_age:
 			if plant.age <= 70:
+				game_data.effect_texts.append("grape collection")
 				game_data.score += 5
 				plant.age += 2
 
@@ -238,9 +248,11 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 			if not "sprayed_poison" in plant.flags.keys():
 				game_data.score += -10
 				#Poison sets over field
+				game_data.effect_texts.append("poison blast")
 				for i in range(game_data.field_size_x):
 					for j in range(game_data.field_size_y):
-						game_data.Get_Plant(i, j).poison += 10
+						if not game_data.Get_Plant (i, j) == None:
+							game_data.Get_Plant(i, j).poison += 10
 				plant.flags["sprayed_poison"] = True
 
 	if plant.plant_type == Plant_Type.evergreencabbage:
@@ -249,27 +261,34 @@ def Get_Plant_Event(game_data, plant, x, y, age_before):
 			game_data.score += 150
 
 			#Attract bugs in a taxicab distance of 2 with power = distance * 10
+			game_data.effect_texts.append("poison blast")
 			power = 10
 			distance = 2
 			val = power * distance
-			game_data.Get_Plant(x, y + 2).bugs += val
-			game_data.Get_Plant(x, y - 2).bugs += val
-			game_data.Get_Plant(x + 2, y).bugs += val
-			game_data.Get_Plant(x - 2, y).bugs += val
-			game_data.Get_Plant(x + 1, y + 1).bugs += val
-			game_data.Get_Plant(x + 1, y - 1).bugs += val
-			game_data.Get_Plant(x - 1, y + 1).bugs += val
-			game_data.Get_Plant(x - 1, y - 1).bugs += val
+			Set_Bug_Effect(x, y + 2, game_data, val)
+			Set_Bug_Effect(x, y - 2, game_data, val)
+			Set_Bug_Effect(x - 2, y, game_data, val)
+			Set_Bug_Effect(x + 2, y, game_data, val)
+			Set_Bug_Effect(x + 1, y + 1, game_data, val)
+			Set_Bug_Effect(x + 1, y - 1, game_data, val)
+			Set_Bug_Effect(x - 1, y + 1, game_data, val)
+			Set_Bug_Effect(x - 1, y - 1, game_data, val)
 
 			distance = 1
 			val = power * distance
 
-			game_data.Get_Plant(x, y + 1).bugs += val
-			game_data.Get_Plant(x, y - 1).bugs += val
-			game_data.Get_Plant(x + 1, y).bugs += val
-			game_data.Get_Plant(x - 1, y).bugs += val
+			Set_Bug_Effect(x, y + 1, game_data, val)
+			Set_Bug_Effect(x, y - 1, game_data, val)
+			Set_Bug_Effect(x + 1, y, game_data, val)
+			Set_Bug_Effect(x - 1, y, game_data, val)
 
 	if plant.plant_type == Plant_Type.siphonrose:
 		event_age = 50
 		if age_before < event_age and plant.age >= event_age:
+			game_data.effect_texts.append("poison blast")
 			game_data.score += 15
+
+# helper functions
+def Set_Bug_Effect(x, y, game_data, val):
+	if not game_data.Get_Plant	(x, y) == None:
+		game_data.Get_Plant		(x, y).bugs += val

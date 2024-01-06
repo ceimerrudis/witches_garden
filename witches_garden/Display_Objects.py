@@ -187,6 +187,12 @@ class Game_Screen(UI_Screen):
     seed_obj_list = None # Contains tuples that hold references to 
     #               (seed sprite objects, seed count obj, seed name obj, plant_type)
     
+    effect_texts = None # Holds references to action text objects (on screen text that indicates which action just happened)
+    #as well as time of creation so they can be properly destroyed
+    time_of_last_effect_text = None #time when last spawned effect text
+    effect_text_time_interval = None #amount of time that can pass between effect texts
+    time_to_delete_effect_text = None #time that text stays on screen
+
     selected_seed_id = None
     slots = None #list of references to slots
     game_data_seeds = None # The actual game data seed list
@@ -217,6 +223,11 @@ class Game_Screen(UI_Screen):
         self.fonts["seed_count"] = pygame.font.SysFont(None, 40)
         self.fonts["info"] = pygame.font.SysFont(None, 30)
         self.fonts["score"] = pygame.font.SysFont(None, 36)
+        self.fonts["effecttext"] = pygame.font.SysFont(None, 30)
+        self.time_of_last_effect_text = pygame.time.get_ticks()
+        self.effect_text_time_interval = 350 
+        self.time_to_delete_effect_text = 1400
+        self.effect_texts = []
 
         # Adding ui objects
 
@@ -265,7 +276,7 @@ class Game_Screen(UI_Screen):
         child_rect = pygame.Rect(rect.x + 6, rect.y + rect.h - 5 - 32 -2, 16, 16)
         obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = child_rect)
         self.Add_Object(obj)
-        obj.Add_Event(Event_Types.on_click, self.ui_logic_controler.Initialize_Pause_Screen, None)#TODO
+        obj.Add_Event(Event_Types.on_click, self.ui_logic_controler.Initialize_Pause_Screen, None)
 
         img = Get_Sprite("undo")
         child_rect = pygame.Rect(rect.x + 6 + 16 + 4, rect.y + rect.h - 5 - 32 - 2, 16, 16)
@@ -320,6 +331,19 @@ class Game_Screen(UI_Screen):
             self.score_obj.rect.h = sz[1]
             
             self.score_obj.image = self.fonts["score"].render(score_txt, False, (255,255,255))
+
+        #move effect texts upward
+        for textobj in self.effect_texts:
+            textobj[0].Update_Position(0, -1)
+            if textobj[1] + self.time_to_delete_effect_text < pygame.time.get_ticks():
+                self.ui_objects.remove(textobj[0])
+                self.effect_texts.remove(textobj)
+
+        #Add any effect texts and remove them from the game data
+        if len(self.game_data.effect_texts) > 0 and self.time_of_last_effect_text + self.effect_text_time_interval < pygame.time.get_ticks():
+            self.Create_Effect_Text(self.game_data.effect_texts[0])
+            self.game_data.effect_texts.pop(0)
+            self.time_of_last_effect_text = pygame.time.get_ticks()
 
         self.Update_Seed_List()
 
@@ -413,6 +437,10 @@ class Game_Screen(UI_Screen):
         obj = UI_Object(img, Image_Type.basic, UI_Object_Type.text, layer, rect = rect)
         self.Add_Object(obj)
         return obj
+
+    def Create_Effect_Text(self, text):
+        obj = self.Create_Text_Object("effecttext", text, 10, 150)
+        self.effect_texts.append((obj, pygame.time.get_ticks()))
 
     def Start_uprooting(self):
         self.uprooting = True

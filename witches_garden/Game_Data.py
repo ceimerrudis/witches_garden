@@ -155,6 +155,9 @@ class Game_Data():
 	outside_conditions = None # the conditions the enviorment tries to enforce
 	turn = None # Turn # of game
 
+	#not nesecary for game to work only needed for the visuals
+	effect_texts = None# holds the names of the executed effects	
+
 	main = None # Reference to main used to stop the game
 	
 	def __init__(self, main):
@@ -163,6 +166,7 @@ class Game_Data():
 		self.initialized = False
 		self.score = 0
 		self.main = main
+		self.effect_texts = []
 
 	def Initialize(self, lv = 0):
 		# loads the level and fills the empty data fields
@@ -303,7 +307,7 @@ class Game_Data():
 				age_before = plant["plant"].age #Used when calling effects
 				plant["plant"].age += growth
 
-				Get_Plant_Event(self, plant["plant"], i, j, age_before)
+				Execute_Plant_Event(self, plant["plant"], i, j, age_before)
 		
 		# 2		
 		self.action_q.clear()
