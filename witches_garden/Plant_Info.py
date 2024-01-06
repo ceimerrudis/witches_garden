@@ -261,7 +261,7 @@ def Execute_Plant_Event(game_data, plant, x, y, age_before):
 			game_data.score += 150
 
 			#Attract bugs in a taxicab distance of 2 with power = distance * 10
-			game_data.effect_texts.append("poison blast")
+			game_data.effect_texts.append("tasty smell")
 			power = 10
 			distance = 2
 			val = power * distance
@@ -285,7 +285,7 @@ def Execute_Plant_Event(game_data, plant, x, y, age_before):
 	if plant.plant_type == Plant_Type.siphonrose:
 		event_age = 50
 		if age_before < event_age and plant.age >= event_age:
-			game_data.effect_texts.append("poison blast")
+			game_data.effect_texts.append("flower picking")
 			game_data.score += 15
 
 # helper functions
