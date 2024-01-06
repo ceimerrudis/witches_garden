@@ -1,2 +1,1 @@
-d:\witches_garden\witches_garden_env\Scripts\python.exe d:\witches_garden\witches_garden\main.py
-pause
+%~dp0\witches_garden_env\Scripts\python.exe %~dp0\witches_garden\main.py
