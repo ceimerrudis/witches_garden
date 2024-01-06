@@ -17,15 +17,15 @@ class Screen():
     # also its x, y attributes function as camera position
 
     def __init__(self):
-        self.screen_width = 176 + 48 # calculated tilemap size + space for ui
-        self.screen_height = 176 + 64
-        self.old_window_size_x = self.screen_width 
+        self.screen_width = (176 + 48) # calculated tilemap size + space for ui
+        self.screen_height = (176 + 64)
+        self.old_window_size_x = self.screen_width
         self.old_window_size_y = self.screen_height
-        self.scale = 1
+        self.scale = 2
         self.game_window = pygame.Rect((0, 0), (self.screen_width, self.screen_height))
         self.viewport = pygame.Rect(0, 0, self.screen_width, self.screen_height)
 
-        self.surface = pygame.display.set_mode((self.screen_width, self.screen_height), RESIZABLE | HWSURFACE)
+        self.surface = pygame.display.set_mode((self.screen_width * 2, self.screen_height * 2), RESIZABLE | HWSURFACE)
         w,h=self.surface.get_size()
         self.resize(w, h)# calling resize so the the code knows the true dimensions
         # and can calculate scale
@@ -91,15 +91,15 @@ class Screen():
         # resizes the window and updates attributes
         
         # if smaller than the possinle minimum force larger 
-        if width < self.screen_width:
-            width = self.screen_width
-        if height < self.screen_height:
-            height = self.screen_height
+        if width < self.screen_width * 2:# multiplied by 2 to increase minimum screen size
+            width = self.screen_width * 2
+        if height < self.screen_height * 2:
+            height = self.screen_height * 2
 
         # calculates the maximum scale that can be used without going out of bounds
         self.scale = min(self.surface.get_width() // self.screen_width, self.surface.get_height() // self.screen_height)
-        if self.scale == 0:
-            self.scale = 1
+        if self.scale < 2:
+            self.scale = 2
 
         # recalculate the screen spaced used to display the game
         game_window_width = self.scale * self.screen_width

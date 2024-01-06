@@ -11,14 +11,19 @@ class UI_Logic_Controler():
     surface = None
     input_sys = None
     stop_game_function = None
+    start_game_function = None
     
-    def __init__(self, game_data, surface, start_game_function, stop_game_function):
+    def __init__(self, game_data, surface, start_game_function, stop_game_function, startOnMainMenu=True, score=0):
         self.game_action_wrapper = Game_Action_Wrapper(game_data)
         self.game_data = game_data
         self.stop_game_function = stop_game_function
+        self.start_game_function = start_game_function
         self.surface = surface
-        # Begin the user interface on the main menu page
-        self.active_screens = [Main_Menu_Screen(surface.screen_width, surface.screen_height, start_game_function)]
+        if startOnMainMenu:
+            # Begin the user interface on the main menu page
+            self.MainMenu()
+        else:
+            self.active_screens = [GameEndedScreen(surface.screen_width, surface.screen_height, score, self.MainMenu)]
 
     def Initialize_Game_Screen(self, surface, game_data):
         #Initialize the children which will each take care of their own data ()
@@ -28,6 +33,9 @@ class UI_Logic_Controler():
 
     def Initialize_Pause_Screen(self):
         self.active_screens.append(Pause_Screen(self.surface.screen_width, self.surface.screen_height, self.Disable_Pause, self.stop_game_function))
+
+    def MainMenu(self):
+        self.active_screens = [Main_Menu_Screen(self.surface.screen_width, self.surface.screen_height, self.start_game_function)]
 
     def Disable_Pause(self):
         self.active_screens.pop(-1)

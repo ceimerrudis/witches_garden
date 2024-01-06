@@ -219,11 +219,12 @@ class Game_Screen(UI_Screen):
 
         self.fonts = {}
         pygame.font.init()
-        self.fonts["default"] = pygame.font.SysFont(None, 24)
-        self.fonts["seed_count"] = pygame.font.SysFont(None, 40)
-        self.fonts["info"] = pygame.font.SysFont(None, 30)
-        self.fonts["score"] = pygame.font.SysFont(None, 36)
-        self.fonts["effecttext"] = pygame.font.SysFont(None, 30)
+        fontPath = None#"witches_garden/fonts/pixelifysans/static/PixelifySans-Regular.ttf"
+        self.fonts["default"] = pygame.font.Font(fontPath, 24)
+        self.fonts["seed_count"] = pygame.font.Font(fontPath, 40)
+        self.fonts["info"] = pygame.font.Font(fontPath, 30)
+        self.fonts["score"] = pygame.font.Font(fontPath, 36)
+        self.fonts["effecttext"] = pygame.font.Font(fontPath, 30)
         self.time_of_last_effect_text = pygame.time.get_ticks()
         self.effect_text_time_interval = 350 
         self.time_to_delete_effect_text = 1400
@@ -495,6 +496,40 @@ class Game_Screen(UI_Screen):
                     
                     self.seed_obj_list.append((seed_obj, name, count, Plant_Type(self.seed_list[i][0])))                   
                     self.Add_Object(seed_obj)
+
+class GameEndedScreen(UI_Screen):
+    fonts = None
+
+    def __init__(self, screen_width, screen_height, score, MainMenu):
+        # Screen size in needed so the button can be placed in the center
+        super().__init__()
+        
+        self.fonts = {}
+        pygame.font.init()
+        self.fonts["default"] = pygame.font.Font(None, 60)
+        self.Create_Text_Object("default", "The game has ended", int(screen_width / 2) - 50, 60)
+        self.Create_Text_Object("default", "your score was " + str(score), int(screen_width / 2) - 50, 80)
+        
+        img = Get_Sprite("menu_btn")
+        rect = pygame.Rect(int(screen_width / 2) - 30, int(screen_height / 2) - 10, 60, 20)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.button, 1, rect = rect)
+        obj.Add_Event(Event_Types.on_click, MainMenu, None)
+        self.Add_Object(obj)
+
+    def Create_Text_Object(self, font_name, text, position_x = 0, position_y = 0, color = (255, 255, 255), layer = 5):
+        if not font_name in self.fonts.keys():
+            return
+
+        sz = self.fonts[font_name].size(text)
+        rect = pygame.Rect(position_x, position_y, sz[0], sz[1])
+
+                                                #antialiass
+        img = self.fonts[font_name].render(text, False, color)
+        obj = UI_Object(img, Image_Type.basic, UI_Object_Type.text, layer, rect = rect)
+        self.Add_Object(obj)
+        return obj
+
+
 
 class Game_Scene():
     # Holds all data about the "game object" visuals
